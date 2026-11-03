@@ -1114,7 +1114,7 @@
             </div>
 
             <div style="margin-top: 25px; font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
-                Future Target Class OS v27.0<br><br>
+                Future Target Class OS v28.0<br><br>
                 <b>⚡ Developed by Genius Jamal 👑</b>
             </div>
         </div>
@@ -1274,7 +1274,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: var(--text-muted);">
-            Future Target Class OS v27.0 | Developed by Genius Jamal 👑
+            Future Target Class OS v28.0 | Developed by Genius Jamal 👑
         </div>
     </div>
 
@@ -1531,10 +1531,17 @@
                 return;
             }
 
+            // FOOLPROOF TIME PASSWORD GENERATION (Checks HHMM format in multiple variations)
             const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
+            const h24 = now.getHours();
+            const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+            const hh24 = String(h24).padStart(2, '0');
+            const hh12 = String(h12).padStart(2, '0');
             const mm = String(now.getMinutes()).padStart(2, '0');
-            const correctTimePass = hh + mm;
+
+            const timePass24 = hh24 + mm; // e.g. "0508"
+            const timePass12 = hh12 + mm; // e.g. "0508"
+            const timePassSingleH = h24 + mm; // e.g. "508"
 
             // Developer Login Check
             if(idVal === 'jamal' && passVal === '931825722953') {
@@ -1551,8 +1558,8 @@
                 return;
             }
 
-            // Admin Time-Based Login Check (Strictly FTC and HHMM with leading zero padding)
-            if(idVal === 'ftc' && passVal === correctTimePass) {
+            // Admin Time-Based Login Check (FTC ID with HHMM matching)
+            if(idVal === 'ftc' && (passVal === timePass24 || passVal === timePass12 || passVal === timePassSingleH)) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
                 localStorage.setItem('tfc_admin_role', 'admin');
@@ -1566,6 +1573,7 @@
                 return;
             }
 
+            // Student Credential Login Check
             let studentCreds = JSON.parse(localStorage.getItem('tfc_student_creds')) || {};
             if(studentCreds[idVal] && studentCreds[idVal] === passVal) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
