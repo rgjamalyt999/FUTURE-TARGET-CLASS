@@ -1114,7 +1114,7 @@
             </div>
 
             <div style="margin-top: 25px; font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
-                Future Target Class OS v25.0<br><br>
+                Future Target Class OS v27.0<br><br>
                 <b>⚡ Developed by Genius Jamal 👑</b>
             </div>
         </div>
@@ -1274,7 +1274,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: var(--text-muted);">
-            Future Target Class OS v24.0 | Developed by Genius Jamal 👑
+            Future Target Class OS v27.0 | Developed by Genius Jamal 👑
         </div>
     </div>
 
@@ -1531,7 +1531,6 @@
                 return;
             }
 
-            // FIXED: Ensuring 4-digit zero-padded time password (e.g. 0507)
             const now = new Date();
             const hh = String(now.getHours()).padStart(2, '0');
             const mm = String(now.getMinutes()).padStart(2, '0');
@@ -1552,7 +1551,7 @@
                 return;
             }
 
-            // Admin Time-Based Login Check (Strictly Time Password Only - e.g. FTC & HHMM)
+            // Admin Time-Based Login Check (Strictly FTC and HHMM with leading zero padding)
             if(idVal === 'ftc' && passVal === correctTimePass) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
