@@ -1115,7 +1115,7 @@
             </div>
 
             <div style="margin-top: 25px; font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
-                Future Target Class OS v20.0<br><br>
+                Future Target Class OS v22.0<br><br>
                 <b>⚡ Developed by Genius Jamal 👑</b>
             </div>
         </div>
@@ -1275,7 +1275,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: var(--text-muted);">
-            Future Target Class OS v20.0 | Developed by Genius Jamal 👑
+            Future Target Class OS v22.0 | Developed by Genius Jamal 👑
         </div>
     </div>
 
@@ -1419,7 +1419,6 @@
             }
         }
 
-        // DUPLICATE & PERMANENT BLOCK CHECK ON REGISTRATION
         function handleStudentSelfRegister() {
             const name = document.getElementById('reg-name').value.trim();
             const father = document.getElementById('reg-father').value.trim();
@@ -1524,7 +1523,7 @@
         }
 
         function handleLogin() {
-            let idVal = document.getElementById('login-id-input').value.trim().toLowerCase();
+            const idVal = document.getElementById('login-id-input').value.trim().toLowerCase();
             const passVal = document.getElementById('login-pass-input').value.trim();
 
             const bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
@@ -1542,6 +1541,7 @@
 
             let activeAdminId = localStorage.getItem('tfc_custom_admin_id') || 'ftc';
 
+            // Developer Login Check
             if(idVal === 'jamal' && passVal === '931825722953') {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
@@ -1556,7 +1556,8 @@
                 return;
             }
 
-            if(idVal === activeAdminId && (passVal === correctTimePass || passVal === 'j999')) {
+            // Admin Login Check (Time-based password only)
+            if(idVal === activeAdminId && passVal === correctTimePass) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
                 localStorage.setItem('tfc_admin_role', 'admin');
@@ -1802,6 +1803,15 @@
                     } else {
                         showGlassAlert('📋 Student Details', `Login ID: ${pendingAction.loginId}\nPassword: ${studentCreds[pendingAction.loginId]}`);
                     }
+                } else if(pendingAction && pendingAction.type === 'remove_student') {
+                    const studentId = pendingAction.studentId;
+                    closeModal();
+                    masterStudents = masterStudents.filter(s => s.id !== studentId);
+                    manualStudents = manualStudents.filter(mId => mId !== studentId);
+                    delete studentFeeData[studentId];
+                    delete studentDetails[studentId];
+                    saveData();
+                    showGlassAlert('🗑️ Student Removed', 'Student ko attendance list se hata diya gaya hai.');
                 } else if(pendingAction === 'clear') {
                     localStorage.clear();
                     masterStudents = [];
@@ -2519,7 +2529,7 @@
                     <div class="actions">
                         <button class="btn-status btn-present ${status === 'P' ? 'active' : ''}" onclick="setDailyStatus('${student.id}', 'P')">P</button>
                         <button class="btn-status btn-absent ${status === 'A' ? 'active' : ''}" onclick="setDailyStatus('${student.id}', 'A')">A</button>
-                        <button class="btn-delete-mini" onclick="removeStudent('${student.id}')" title="Delete">×</button>
+                        <button class="btn-delete-mini" onclick="confirmRemoveStudent('${student.id}')" title="Delete">×</button>
                     </div>
                 `;
                 container.appendChild(row);
