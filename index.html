@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1280, initial-scale=0.4, maximum-scale=3.0, user-scalable=yes">
+    <title>Future Target Class - Hacker Terminal OS</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: rgba(12, 12, 18, 0.88);
+            --accent-cyan: #00f3ff;
+            --accent-green: #00ff66;
+            --accent-red: #ff3333;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --border-color: rgba(0, 243, 255, 0.3);
+            --glass-blur: blur(25px);
+            --table-bg: #050508;
+        }
+
+        body.light-mode {
+            --bg-color: #f0f4f8;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --accent-cyan: #0055ff;
+            --accent-green: #008833;
+            --accent-red: #cc0000;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --border-color: rgba(0, 85, 255, 0.2);
+            --table-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            min-width: 1200px;
+            background-image: 
+                radial-gradient(circle at 50% -10%, rgba(0, 243, 255, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 10% 100%, rgba(0, 102, 255, 0.1) 0%, transparent 50%);
+            background-attachment: fixed;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body.light-mode {
+            background-image: 
+                radial-gradient(circle at 50% -10%, rgba(0, 85, 255, 0.1) 0%, transparent 60%),
+                radial-gradient(circle at 10% 100%, rgba(0, 136, 51, 0.08) 0%, transparent 50%);
+        }
+
+        #login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #02050e;
+            z-index: 99999;
+            padding: 20px;
+            overflow-y: auto;
+            transition: background 0.3s ease;
+        }
+
+        body.light-mode #login-wrapper {
+            background: #e2e8f0;
+        }
+
+        #molecule-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 2;
+            background: var(--card-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 22px;
+            padding: 35px 30px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.1);
+            text-align: center;
+            margin: auto;
+        }
+
+        .login-card h2 {
+            color: var(--accent-cyan);
+            font-size: 1.7rem;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            margin-bottom: 22px;
+        }
+
+        .login-input-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+
+        .login-input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .login-input-group input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        body.light-mode .login-input-group input {
+            background: rgba(255, 255, 255, 0.9);
+            color: #111;
+        }
+
+        .login-input-group input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.5);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 700;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 8px;
+            box-shadow: 0 4px 15px rgba(0, 243, 255, 0.4);
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            opacity: 0.95;
+            box-shadow: 0 0 22px rgba(0, 243, 255, 0.7);
+        }
+
+        .switch-auth-mode {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .switch-auth-mode span {
+            color: var(--accent-cyan);
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .login-footer-dev {
+            margin-top: 18px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+        }
+
+        #main-app-wrapper, #student-app-wrapper {
+            display: none;
+        }
+
+        .container {
+            max-width: 1150px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        header {
+            text-align: center;
+            flex: 1;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .class-info {
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .class-contact {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .menu-btn, .logout-btn {
+            background: var(--card-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            color: var(--accent-cyan);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9997;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .settings-drawer {
+            position: fixed;
+            top: 0; right: -350px; width: 320px; height: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(25px);
+            border-left: 1px solid var(--border-color);
+            z-index: 9998;
+            padding: 20px;
+            transition: right 0.3s ease;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            color: var(--text-main);
+            overflow-y: auto;
+        }
+
+        .settings-drawer.active {
+            right: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .drawer-header h3 {
+            color: var(--accent-cyan);
+            font-size: 1.1rem;
+        }
+
+        .close-drawer {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            font-size: 0.9rem;
+        }
+
+        .drawer-menu-link {
+            display: block;
+            width: 100%;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--accent-cyan);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .drawer-menu-link:hover {
+            background: rgba(0, 243, 255, 0.2);
+        }
+
+        .drawer-menu-danger {
+            background: rgba(255, 51, 51, 0.1);
+            border-color: rgba(255, 51, 51, 0.3);
+            color: var(--accent-red);
+        }
+
+        .drawer-menu-danger:hover {
+            background: rgba(255, 51, 51, 0.2);
+        }
+
+        .contact-box {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .contact-box h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            transition: .3s;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider:before {
+            position: absolute; content: "";
+            height: 18px; width: 18px; left: 2px; bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--accent-cyan); }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: var(--card-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(0, 102, 255, 0.2));
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+        }
+
+        .section-view {
+            display: none;
+        }
+
+        .section-view.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input[type="date"], input[type="month"], input[type="text"], input[type="number"], input[type="email"] {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        body.light-mode input[type="date"], 
+        body.light-mode input[type="month"], 
+        body.light-mode input[type="text"],
+        body.light-mode input[type="number"],
+        body.light-mode input[type="email"] {
+            background: rgba(255, 255, 255, 0.9);
+            color: #111;
+        }
+
+        input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+        }
+
+        button {
+            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 700;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 243, 255, 0.25);
+        }
+
+        button:hover {
+            opacity: 0.95;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.6);
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #00ff66, #00aa44);
+            box-shadow: 0 4px 12px rgba(0, 255, 102, 0.25);
+            color: #000;
+        }
+
+        .btn-txt {
+            background: linear-gradient(135deg, #ffaa00, #cc7700);
+            box-shadow: 0 4px 12px rgba(255, 170, 0, 0.25);
+            color: #000;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
+            color: #fff;
+        }
+
+        .add-student-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .add-student-row input {
+            flex: 1;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .stats-bar span b {
+            color: var(--text-main);
+        }
+
+        .list-container {
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .student-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+
+        .student-name {
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .student-name:hover {
+            color: var(--accent-cyan);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-status {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn-present {
+            background: rgba(0, 255, 102, 0.1);
+            color: var(--accent-green);
+            border-color: rgba(0, 255, 102, 0.3);
+        }
+
+        .btn-present.active {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .btn-absent {
+            background: rgba(255, 51, 51, 0.1);
+            color: var(--accent-red);
+            border-color: rgba(255, 51, 51, 0.3);
+        }
+
+        .btn-absent.active {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            max-height: 550px;
+        }
+
+        table.register-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        table.register-table th, table.register-table td {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 6px;
+            text-align: center;
+        }
+
+        table.register-table th {
+            background: rgba(0, 243, 255, 0.15);
+            color: var(--accent-cyan);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        table.register-table th.name-col, table.register-table td.name-col {
+            position: sticky;
+            left: 0;
+            background: var(--table-bg);
+            z-index: 3;
+            text-align: left;
+            padding-left: 12px;
+            min-width: 180px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attendance-cell {
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .status-p {
+            color: var(--accent-green);
+            background: rgba(0, 255, 102, 0.06);
+        }
+
+        .status-a {
+            color: var(--accent-red);
+            background: rgba(255, 51, 51, 0.06);
+        }
+
+        .status-dash {
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .btn-delete-mini {
+            background: none;
+            border: none;
+            color: #ff3333;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-left: 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 35px;
+        }
+
+        .season-badge {
+            background: rgba(255, 170, 0, 0.15);
+            border: 1px solid #ffaa00;
+            color: #ffaa00;
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .season-badge:hover {
+            background: rgba(255, 170, 0, 0.25);
+        }
+
+        .session-summary {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(0, 102, 255, 0.1));
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .summary-box h5 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .summary-box h3 {
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .fee-row:hover {
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        .fee-info h4 {
+            font-size: 1rem;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .fee-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .fee-stats {
+            text-align: right;
+            font-size: 0.85rem;
+        }
+
+        .receipt-drawer-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .receipt-drawer-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .receipt-slide-panel {
+            position: fixed;
+            top: 0; right: -100%; width: 100%; max-width: 420px; height: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(25px);
+            border-left: 1px solid var(--accent-cyan);
+            z-index: 10001;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -15px 0 40px rgba(0, 0, 0, 0.9);
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+
+        .receipt-slide-panel.active {
+            right: 0;
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .receipt-header h3 {
+            color: var(--accent-cyan);
+            font-size: 1.3rem;
+        }
+
+        .history-list {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 18px;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 12px;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        #student-popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #student-popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .student-glass-popup {
+            background: rgba(15, 15, 25, 0.92);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.5);
+            animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popScale {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .glass-modal {
+            background: rgba(15, 15, 22, 0.95);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 18px;
+            padding: 25px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+            text-align: center;
+            color: #fff;
+        }
+
+        .glass-modal h3 {
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .glass-modal p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .glass-modal input[type="password"], .glass-modal input[type="text"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+            outline: none;
+            margin-bottom: 18px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            box-shadow: none;
+        }
+
+        .print-footer {
+            display: none;
+        }
+
+        @media print {
+            @page { size: landscape; margin: 10mm; }
+            body { background: #fff !important; color: #000 !important; padding: 0 !important; font-size: 10px !important; min-width: auto !important; }
+            .card, header, .tabs, .top-bar, .controls-bar, .menu-btn, .logout-btn { background: none !important; border: none !important; box-shadow: none !important; color: #000 !important; }
+            header h1 { color: #000 !important; text-shadow: none !important; font-size: 18px !important; }
+            .class-info, .class-contact { color: #333 !important; font-size: 11px !important; }
+            .tab-btn, button, .add-student-row, .btn-delete-mini, .actions, .menu-btn, .controls-bar, .season-badge { display: none !important; }
+            .section-view { display: block !important; }
+            .table-responsive { max-height: none !important; overflow: visible !important; }
+            table.register-table { width: 100% !important; font-size: 9px !important; }
+            table.register-table th, table.register-table td { border: 1px solid #000 !important; color: #000 !important; background: #fff !important; padding: 4px 2px !important; }
+            table.register-table th.name-col, table.register-table td.name-col { position: static !important; background: #fff !important; color: #000 !important; min-width: 120px !important; }
+            .status-p { color: #008000 !important; font-weight: bold; }
+            .status-a { color: #ff0000 !important; font-weight: bold; }
+            .print-footer { display: block !important; text-align: center; margin-top: 15px; font-weight: bold; font-size: 11px; color: #333; border-top: 1px solid #000; padding-top: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="student-popup-overlay">
+        <div class="student-glass-popup">
+            <h3 style="color:var(--accent-cyan); margin-bottom: 10px;">🎓 Attendance Update</h3>
+            <p id="student-popup-msg" style="color:#fff; font-size:1rem; line-height:1.5; margin-bottom:20px;"></p>
+            <button onclick="closeStudentPopup()" style="width:100%; background:var(--accent-cyan); color:#000; padding:10px; font-weight:bold; border-radius:8px;">Theek Hai 👍</button>
+        </div>
+    </div>
+
+    <div id="login-wrapper">
+        <canvas id="molecule-canvas"></canvas>
+        <div class="login-card">
+            <h2>Future Target Class</h2>
+            <p id="auth-subtitle">Secure Terminal System</p>
+            
+            <div id="login-form-container">
+                <div class="login-input-group">
+                    <label>Admin ID or Student ID</label>
+                    <input type="text" id="login-id-input" placeholder="Enter ID" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                </div>
+                
+                <div class="login-input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass-input" placeholder="••••" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                </div>
+
+                <button class="btn-login" onclick="handleLogin()">Login ⚡</button>
+                <div class="switch-auth-mode">
+                    New Student? <span onclick="toggleAuthMode('register')">Register Here</span>
+                </div>
+            </div>
+
+            <div id="register-form-container" style="display:none; text-align:left;">
+                <div class="login-input-group">
+                    <label>Student Full Name</label>
+                    <input type="text" id="reg-name" placeholder="Enter full name" autocomplete="off">
+                </div>
+                <div class="login-input-group">
+                    <label>Father's Name</label>
+                    <input type="text" id="reg-father" placeholder="Enter father's name" autocomplete="off">
+                </div>
+                <div class="login-input-group">
+                    <label>Mother's Name</label>
+                    <input type="text" id="reg-mother" placeholder="Enter mother's name" autocomplete="off">
+                </div>
+                <div class="login-input-group">
+                    <label>Mobile Number</label>
+                    <input type="text" id="reg-mobile" placeholder="10-digit mobile number" autocomplete="off">
+                </div>
+                <div class="login-input-group">
+                    <label>Email ID</label>
+                    <input type="email" id="reg-email" placeholder="Email address" autocomplete="off">
+                </div>
+                <div class="login-input-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="reg-dob">
+                </div>
+
+                <button class="btn-login" onclick="handleStudentSelfRegister()">Register Now 🚀</button>
+                <div class="switch-auth-mode" style="text-align:center;">
+                    Already registered? <span onclick="toggleAuthMode('login')">Back to Login</span>
+                </div>
+            </div>
+
+            <div class="login-footer-dev">Developed by Genius Jamal 👑</div>
+        </div>
+    </div>
+
+    <div id="main-app-wrapper">
+        <div id="custom-modal" class="modal-overlay">
+            <div class="glass-modal">
+                <h3 id="modal-title">🔒 Security Verification</h3>
+                <p id="modal-desc">Enter password to proceed:</p>
+                <input type="password" id="modal-password-input" placeholder="••••" autocomplete="current-password" style="display:none;">
+                <input type="text" id="modal-text-input" placeholder="" style="display:none;">
+                <div class="modal-actions" id="modal-actions-container">
+                    <button class="btn-cancel" id="modal-cancel-btn" onclick="closeModal()">Cancel</button>
+                    <button id="modal-confirm-btn" onclick="submitModal()">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="receipt-drawer-overlay" class="receipt-drawer-overlay" onclick="closeReceiptDrawer()"></div>
+        <div id="receipt-slide-panel" class="receipt-slide-panel">
+            <div class="receipt-header">
+                <h3 id="rcpt-name">Student Name</h3>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Future Target Class Fee Receipt</p>
+                <button onclick="closeReceiptDrawer()" style="position: absolute; top: 0; right: 0; background:none; border:none; color:var(--accent-cyan); font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            
+            <div style="margin-bottom: 15px; font-size: 0.85rem; background: rgba(0,243,255,0.04); padding: 12px; border-radius: 8px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>Total Assigned Fee:</span> <b id="rcpt-total" style="color:var(--accent-cyan);">₹0</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span>Total Paid (Season):</span> <b id="rcpt-paid" style="color:var(--accent-green);">₹0</b>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Remaining Balance:</span> <b id="rcpt-dues" style="color:var(--accent-red);">₹0</b>
+                </div>
+            </div>
+
+            <label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display:block;">Payment History (Date-wise):</label>
+            <div class="history-list" id="rcpt-history-list">
+                <div style="text-align:center; color:var(--text-muted); font-size:0.75rem; padding:10px;">No payments recorded yet.</div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.75rem;">Set Total Fee (₹):</label>
+                <div style="display:flex; gap:8px; margin-top:4px;">
+                    <input type="number" id="set-total-fee-input" placeholder="e.g. 2000" style="flex:1;">
+                    <button onclick="updateStudentTotalFee()" style="background:var(--accent-cyan); color:#000;">Set</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px;">
+                <label style="font-size: 0.75rem;">Collect New Payment (₹):</label>
+                <div style="display:flex; gap:8px; margin-top:4px;">
+                    <input type="number" id="pay-amount-input" placeholder="e.g. 100" style="flex:1;">
+                    <button onclick="recordFeePayment()" style="background:var(--accent-green); color:#000;">Collect (+)</button>
+                </div>
+            </div>
+
+            <button class="btn-cancel" onclick="closeReceiptDrawer()" style="width:100%; margin-top:auto;">Close Panel</button>
+        </div>
+
+        <div id="drawer-overlay" class="drawer-overlay" onclick="toggleSettingsDrawer()"></div>
+
+        <div id="settings-drawer" class="settings-drawer">
+            <div class="drawer-header">
+                <h3>⚙️ App Settings</h3>
+                <button class="close-drawer" onclick="toggleSettingsDrawer()">✕</button>
+            </div>
+
+            <button class="drawer-menu-link" onclick="toggleSettingsDrawer(); switchTab('fee')">💰 Fee Ledger & Dues</button>
+            <button class="drawer-menu-link" onclick="toggleSettingsDrawer(); switchTab('credentials')">🔑 Student ID & Pass Credentials</button>
+            <button class="drawer-menu-link" id="menu-link-system" onclick="toggleSettingsDrawer(); handleDeveloperMenu('system')">🛠️ System Management (Backup)</button>
+            <button class="drawer-menu-link drawer-menu-danger" onclick="toggleSettingsDrawer(); promptClearData()">🗑️ Clear Data & Reset</button>
+            <button class="drawer-menu-link" onclick="toggleSettingsDrawer(); promptChangeAdminId()">✏️ Change Admin User ID</button>
+
+            <div class="setting-item">
+                <span>☀️ Light / Normal Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-toggle" onchange="toggleThemeSetting()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <span>🔊 Sound Effects</span>
+                <label class="switch">
+                    <input type="checkbox" id="sound-toggle" checked onchange="toggleSoundSetting()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="contact-box">
+                <h4>📍 Contact Us & Info</h4>
+                <p><b>Class:</b> Future Target Class</p>
+                <p><b>Director:</b> Md Amzad Sir</p>
+                <p>📞 082103 90072</p>
+                <p>📍 Khadda Rahimpur</p>
+            </div>
+
+            <div style="margin-top: 25px; font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
+                Future Target Class OS v20.0<br><br>
+                <b>⚡ Developed by Genius Jamal 👑</b>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="top-bar">
+                <button class="logout-btn" onclick="handleLogout()" title="Lock / Logout">🔒</button>
+                <header>
+                    <h1>Future Target Class</h1>
+                    <div class="class-info">By : Md Amzad Sir</div>
+                    <div class="class-contact">📞 082103 90072 &nbsp;|&nbsp; 📍 Khadda Rahimpur</div>
+                </header>
+                <button class="menu-btn" onclick="toggleSettingsDrawer()" title="Settings">☰</button>
+            </div>
+
+            <div id="season-display-badge" class="season-badge" onclick="promptChangeSeason()" title="Click to change season">
+                📅 Active Academic Season: <b id="current-season-text">2025-2026</b> (Tap to Edit)
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="playClickSound(); switchTab('daily')">📅 Daily Portal</button>
+                <button class="tab-btn" onclick="playClickSound(); switchTab('monthly')">📊 Monthly Register</button>
+            </div>
+
+            <div id="daily-section" class="section-view active">
+                <div class="card">
+                    <div class="controls-bar">
+                        <div class="input-group">
+                            <label for="attendance-date">Date:</label>
+                            <input type="date" id="attendance-date" onchange="playClickSound(); renderDailyUI()">
+                        </div>
+                        <div>
+                            <button class="btn-share" onclick="playClickSound(); shareDailyReport()">🔗 Share</button>
+                        </div>
+                    </div>
+
+                    <div class="add-student-row" id="add-student-container">
+                        <input type="text" id="student-name-input" placeholder="Enter manual student full name...">
+                        <button onclick="addManualStudent()">Add Manual Student ✍️</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="stats-bar">
+                        <span>Total: <b id="total-count">0</b></span>
+                        <span>Present: <b id="present-count" style="color: var(--accent-green);">0</b></span>
+                        <span>Absent: <b id="absent-count" style="color: var(--accent-red);">0</b></span>
+                    </div>
+
+                    <div class="list-container" id="daily-list-container"></div>
+                </div>
+            </div>
+
+            <div id="monthly-section" class="section-view">
+                <div class="card">
+                    <div class="controls-bar">
+                        <div class="input-group">
+                            <label for="month-picker">Month:</label>
+                            <input type="month" id="month-picker" onchange="playClickSound(); renderRegister()">
+                        </div>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <button class="btn-pdf" onclick="playClickSound(); window.print()">📥 Print</button>
+                            <button class="btn-txt" onclick="playClickSound(); downloadMonthlyTxt()">TXT</button>
+                            <button class="btn-share" onclick="playClickSound(); shareMonthlyReport()">🔗 Share</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 8px;">
+                    <div class="table-responsive" id="register-table-wrapper"></div>
+                </div>
+            </div>
+
+            <div id="fee-section" class="section-view">
+                <div class="card">
+                    <div class="session-summary">
+                        <div class="summary-box">
+                            <h5>Total Collected (Season)</h5>
+                            <h3 id="summary-total-collected" style="color: var(--accent-green);">₹0</h3>
+                        </div>
+                        <div class="summary-box">
+                            <h5>Total Dues Pending</h5>
+                            <h3 id="summary-total-dues" style="color: var(--accent-red);">₹0</h3>
+                        </div>
+                    </div>
+
+                    <div class="controls-bar">
+                        <h3 style="color: var(--accent-cyan); font-size: 1.1rem;">💰 Fee Ledger & Dues</h3>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <button class="btn-pdf" onclick="playClickSound(); window.print()">📥 Print</button>
+                            <button class="btn-txt" onclick="playClickSound(); downloadFeeTxt()">TXT</button>
+                            <button class="btn-share" onclick="playClickSound(); shareFeeReport()">🔗 Share</button>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">Click on any student name to open sliding receipt panel.</p>
+                    <div class="list-container" id="fee-list-container"></div>
+                </div>
+            </div>
+
+            <div id="credentials-section" class="section-view">
+                <div class="card">
+                    <h3 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 10px;">🔑 Pending Student Registrations & Approvals</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Review self-registered students. Approve them or reject them permanently.</p>
+                    <div class="list-container" id="pending-registrations-container"></div>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 10px;">🎓 Approved Active Students</h3>
+                    <div class="list-container" id="credentials-list-container"></div>
+                </div>
+            </div>
+
+            <div id="system-section" class="section-view">
+                <div class="card">
+                    <h3 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 10px;">🛠️ System Management & Active Devices (Firebase Control)</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Manage active user sessions. You can instantly force logout or ban any user/student from accessing the app.</p>
+                    
+                    <div id="active-sessions-list" style="margin-bottom: 20px;"></div>
+
+                    <div style="display: flex; flex-direction: column; gap: 15px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 15px;">
+                        <button onclick="downloadJSONBackup()" style="background: linear-gradient(135deg, #00ff66, #00aa44); color:#000; padding:14px; font-size:0.95rem;">📥 Download Complete Data Backup (JSON)</button>
+                        
+                        <div>
+                            <label style="font-size: 0.85rem; display: block; margin-bottom: 8px;">📤 Restore Data from Backup File:</label>
+                            <input type="file" id="restore-file-input" accept=".json" style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; width: 100%; border: 1px solid var(--border-color); color: #fff; font-size: 0.85rem; margin-bottom: 10px;">
+                            <button onclick="restoreJSONBackup()" style="background: linear-gradient(135deg, #ffaa00, #cc7700); color:#000; padding:12px; width:100%; font-size:0.9rem;">Restore Backup Now ⚡</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="print-footer">
+                Future Target Class (By : Md Amzad Sir, Khadda Rahimpur, Contact: 082103 90072)<br>
+                Developed by Genius Jamal 👑
+            </div>
+        </div>
+    </div>
+
+    <div id="student-app-wrapper" style="display: none; padding: 25px; max-width: 900px; margin: 0 auto;">
+        <div class="top-bar">
+            <button class="logout-btn" onclick="handleLogout()" title="Logout">🔒</button>
+            <header>
+                <h1 id="student-portal-title">Student Attendance Portal</h1>
+                <div class="class-info">Future Target Class (By : Md Amzad Sir)</div>
+            </header>
+        </div>
+
+        <div class="card">
+            <div class="controls-bar">
+                <div class="input-group">
+                    <label for="student-view-date">Select Date:</label>
+                    <input type="date" id="student-view-date" onchange="renderStudentView()">
+                </div>
+            </div>
+            <div style="text-align: center; padding: 25px;" id="student-status-display">
+                Loading attendance status...
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: var(--text-muted);">
+            Future Target Class OS v20.0 | Developed by Genius Jamal 👑
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('molecule-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        for (let i = 0; i < 45; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 1.2,
+                vy: (Math.random() - 0.5) * 1.2,
+                radius: Math.random() * 3 + 2
+            });
+        }
+
+        function animateMolecules() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(0, 243, 255, 0.18)';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                ctx.fillStyle = '#00f3ff';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    let p2 = particles[j];
+                    let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 130) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateMolecules);
+        }
+        animateMolecules();
+
+        let backPressedOnce = false;
+        window.history.pushState(null, null, window.location.href);
+        window.addEventListener('popstate', function () {
+            const mainAppVisible = document.getElementById('main-app-wrapper').style.display === 'block' || document.getElementById('student-app-wrapper').style.display === 'block';
+            if (mainAppVisible) {
+                const feeActive = document.getElementById('fee-section')?.classList.contains('active');
+                const sysActive = document.getElementById('system-section')?.classList.contains('active');
+                const monthlyActive = document.getElementById('monthly-section')?.classList.contains('active');
+                const credActive = document.getElementById('credentials-section')?.classList.contains('active');
+                
+                if (feeActive || sysActive || monthlyActive || credActive) {
+                    switchTab('daily');
+                    window.history.pushState(null, null, window.location.href);
+                    return;
+                }
+
+                if (!backPressedOnce) {
+                    backPressedOnce = true;
+                    window.history.pushState(null, null, window.location.href);
+                } else {
+                    handleLogout();
+                }
+            } else {
+                window.history.pushState(null, null, window.location.href);
+            }
+        });
+
+        function showGlassAlert(title, message, callback = null) {
+            playClickSound('toggle');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = message;
+            document.getElementById('modal-password-input').style.display = 'none';
+            document.getElementById('modal-text-input').style.display = 'none';
+            document.getElementById('modal-cancel-btn').style.display = 'none';
+            document.getElementById('modal-confirm-btn').innerText = 'OK';
+            document.getElementById('modal-confirm-btn').onclick = function() {
+                closeModal();
+                if(callback) callback();
+            };
+            document.getElementById('custom-modal').classList.add('active');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkBanStatus();
+            const activeSessionLogin = localStorage.getItem('tfc_permanent_logged_in');
+            const userRole = localStorage.getItem('tfc_user_role');
+
+            if(activeSessionLogin === 'true') {
+                document.getElementById('login-wrapper').style.display = 'none';
+                if(userRole === 'admin') {
+                    document.getElementById('main-app-wrapper').style.display = 'block';
+                    applyRolePermissions();
+                    renderDailyUI();
+                } else if(userRole === 'student') {
+                    document.getElementById('student-app-wrapper').style.display = 'block';
+                    document.getElementById('student-view-date').value = getTodayDateStr();
+                    renderStudentView();
+                }
+            }
+            updateSeasonDisplay();
+            checkForLiveStudentPopup();
+        });
+
+        function checkBanStatus() {
+            const currentUserId = localStorage.getItem('tfc_student_id') || localStorage.getItem('tfc_admin_id');
+            const bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
+            if(currentUserId && bannedUsers.includes(currentUserId)) {
+                alert('Your account has been banned by the developer.');
+                handleLogout();
+            }
+        }
+
+        function toggleAuthMode(mode) {
+            playClickSound('toggle');
+            if(mode === 'register') {
+                document.getElementById('login-form-container').style.display = 'none';
+                document.getElementById('register-form-container').style.display = 'block';
+                document.getElementById('auth-subtitle').innerText = 'New Student Registration Portal';
+            } else {
+                document.getElementById('register-form-container').style.display = 'none';
+                document.getElementById('login-form-container').style.display = 'block';
+                document.getElementById('auth-subtitle').innerText = 'Secure Terminal System';
+            }
+        }
+
+        // DUPLICATE & PERMANENT BLOCK CHECK ON REGISTRATION
+        function handleStudentSelfRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const father = document.getElementById('reg-father').value.trim();
+            const mother = document.getElementById('reg-mother').value.trim();
+            const mobile = document.getElementById('reg-mobile').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const dob = document.getElementById('reg-dob').value;
+
+            if(!name || !mobile) {
+                alert('⚠️ Please fill at least Student Name and Mobile Number.');
+                return;
+            }
+
+            let rejectedMobiles = JSON.parse(localStorage.getItem('tfc_rejected_mobiles')) || [];
+            if(rejectedMobiles.includes(mobile)) {
+                alert('🚫 Registration rejected! This mobile number is permanently blocked.');
+                return;
+            }
+
+            let pendingRegs = JSON.parse(localStorage.getItem('tfc_pending_regs')) || [];
+            let masterStudents = JSON.parse(localStorage.getItem('tfc_master_students')) || [];
+
+            let exists = masterStudents.some(s => s.name.toLowerCase() === name.toLowerCase()) || 
+                         pendingRegs.some(r => r.mobile === mobile || r.name.toLowerCase() === name.toLowerCase());
+
+            if(exists) {
+                alert('⚠️ A student with this Name or Mobile Number already exists or request is already pending!');
+                return;
+            }
+
+            playClickSound('success');
+            const newReq = {
+                id: 'req_' + Date.now(),
+                name: name,
+                father: father,
+                mother: mother,
+                mobile: mobile,
+                email: email,
+                dob: dob,
+                timestamp: new Date().toLocaleString()
+            };
+
+            pendingRegs.push(newReq);
+            localStorage.setItem('tfc_pending_regs', JSON.stringify(pendingRegs));
+
+            alert('✨ Registration Successful! Aapka registration request Admin ke paas bhej diya gaya hai.');
+            
+            document.getElementById('reg-name').value = '';
+            document.getElementById('reg-father').value = '';
+            document.getElementById('reg-mother').value = '';
+            document.getElementById('reg-mobile').value = '';
+            document.getElementById('reg-email').value = '';
+            document.getElementById('reg-dob').value = '';
+            toggleAuthMode('login');
+        }
+
+        function applyRolePermissions() {
+            const currentRole = localStorage.getItem('tfc_admin_role');
+            const sysLink = document.getElementById('menu-link-system');
+
+            if(currentRole === 'developer') {
+                if(sysLink) sysLink.style.display = 'block';
+            } else {
+                if(sysLink) sysLink.style.display = 'none';
+            }
+        }
+
+        function updateSeasonDisplay() {
+            const season = localStorage.getItem('tfc_active_season') || '2025-2026';
+            const el = document.getElementById('current-season-text');
+            if(el) el.innerText = season;
+        }
+
+        function playClickSound(type = 'success') {
+            const soundEnabled = JSON.parse(localStorage.getItem('tfc_sound_enabled')) ?? true;
+            if(!soundEnabled) return;
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if(type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1174.66, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.18);
+                } else if(type === 'toggle') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.1);
+                }
+            } catch(e) {}
+        }
+
+        function handleLogin() {
+            let idVal = document.getElementById('login-id-input').value.trim().toLowerCase();
+            const passVal = document.getElementById('login-pass-input').value.trim();
+
+            const bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
+            if(bannedUsers.includes(idVal)) {
+                showGlassAlert('❌ Access Banned', 'Your account has been banned by the developer.');
+                return;
+            }
+
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const hh = hours < 10 ? '0' + hours : '' + hours;
+            const mm = minutes < 10 ? '0' + minutes : '' + minutes;
+            const correctTimePass = hh + mm;
+
+            let activeAdminId = localStorage.getItem('tfc_custom_admin_id') || 'ftc';
+
+            if(idVal === 'jamal' && passVal === '931825722953') {
+                localStorage.setItem('tfc_permanent_logged_in', 'true');
+                localStorage.setItem('tfc_user_role', 'admin');
+                localStorage.setItem('tfc_admin_role', 'developer');
+                localStorage.setItem('tfc_admin_id', 'jamal');
+                playClickSound('success');
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('main-app-wrapper').style.display = 'block';
+                applyRolePermissions();
+                renderDailyUI();
+                registerActiveSession('jamal', 'Developer');
+                return;
+            }
+
+            if(idVal === activeAdminId && (passVal === correctTimePass || passVal === 'j999')) {
+                localStorage.setItem('tfc_permanent_logged_in', 'true');
+                localStorage.setItem('tfc_user_role', 'admin');
+                localStorage.setItem('tfc_admin_role', 'admin');
+                localStorage.setItem('tfc_admin_id', activeAdminId);
+                playClickSound('success');
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('main-app-wrapper').style.display = 'block';
+                applyRolePermissions();
+                renderDailyUI();
+                registerActiveSession(activeAdminId, 'Admin');
+                return;
+            }
+
+            let studentCreds = JSON.parse(localStorage.getItem('tfc_student_creds')) || {};
+            if(studentCreds[idVal] && studentCreds[idVal] === passVal) {
+                localStorage.setItem('tfc_permanent_logged_in', 'true');
+                localStorage.setItem('tfc_user_role', 'student');
+                localStorage.setItem('tfc_student_id', idVal);
+                playClickSound('success');
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('student-app-wrapper').style.display = 'block';
+                document.getElementById('student-view-date').value = getTodayDateStr();
+                renderStudentView();
+                registerActiveSession(idVal, 'Student');
+                showGlassAlert('✨ Welcome', 'Successfully logged in to Student Portal!');
+                return;
+            }
+
+            showGlassAlert('⚠️ Login Failed', 'Invalid ID or Password!');
+        }
+
+        function promptChangeAdminId() {
+            playClickSound('toggle');
+            pendingAction = 'change_admin_id';
+            document.getElementById('modal-title').innerText = '✏️ Change Admin User ID';
+            document.getElementById('modal-desc').innerText = 'Enter master password (j999) to change Admin User ID:';
+            document.getElementById('modal-password-input').style.display = 'block';
+            document.getElementById('modal-text-input').style.display = 'block';
+            document.getElementById('modal-text-input').placeholder = 'Enter new Admin ID (e.g. amzad)';
+            document.getElementById('modal-text-input').value = localStorage.getItem('tfc_custom_admin_id') || 'ftc';
+            document.getElementById('modal-cancel-btn').style.display = 'block';
+            document.getElementById('modal-confirm-btn').innerText = 'Update ID';
+            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
+            document.getElementById('modal-password-input').value = "";
+            document.getElementById('custom-modal').classList.add('active');
+            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
+        }
+
+        function registerActiveSession(userId, role) {
+            let activeSessions = JSON.parse(localStorage.getItem('tfc_active_sessions')) || {};
+            activeSessions[userId] = {
+                userId: userId,
+                role: role,
+                loginTime: new Date().toLocaleTimeString(),
+                date: getTodayDateStr()
+            };
+            localStorage.setItem('tfc_active_sessions', JSON.stringify(activeSessions));
+        }
+
+        document.getElementById('login-pass-input').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') handleLogin();
+        });
+
+        function handleLogout() {
+            playClickSound('toggle');
+            localStorage.removeItem('tfc_permanent_logged_in');
+            localStorage.removeItem('tfc_user_role');
+            localStorage.removeItem('tfc_admin_role');
+            localStorage.removeItem('tfc_student_id');
+            document.getElementById('main-app-wrapper').style.display = 'none';
+            document.getElementById('student-app-wrapper').style.display = 'none';
+            document.getElementById('login-wrapper').style.display = 'flex';
+            document.getElementById('login-pass-input').value = '';
+            document.getElementById('login-id-input').value = '';
+            backPressedOnce = false;
+        }
+
+        let lightModeEnabled = JSON.parse(localStorage.getItem('tfc_light_mode')) ?? false;
+        if(lightModeEnabled) {
+            document.body.classList.add('light-mode');
+            const toggle = document.getElementById('theme-toggle');
+            if(toggle) toggle.checked = true;
+        }
+
+        let soundEnabled = JSON.parse(localStorage.getItem('tfc_sound_enabled')) ?? true;
+        const soundToggle = document.getElementById('sound-toggle');
+        if(soundToggle) soundToggle.checked = soundEnabled;
+
+        function toggleThemeSetting() {
+            lightModeEnabled = document.getElementById('theme-toggle').checked;
+            localStorage.setItem('tfc_light_mode', JSON.stringify(lightModeEnabled));
+            if(lightModeEnabled) {
+                document.body.classList.add('light-mode');
+            } else {
+                document.body.classList.remove('light-mode');
+            }
+            playClickSound('success');
+        }
+
+        function toggleSoundSetting() {
+            soundEnabled = document.getElementById('sound-toggle').checked;
+            localStorage.setItem('tfc_sound_enabled', JSON.stringify(soundEnabled));
+            playClickSound('success');
+        }
+
+        function toggleSettingsDrawer() {
+            playClickSound('toggle');
+            document.getElementById('settings-drawer').classList.toggle('active');
+            document.getElementById('drawer-overlay').classList.toggle('active');
+        }
+
+        function getTodayDateStr() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            let mm = now.getMonth() + 1;
+            let dd = now.getDate();
+            if(mm < 10) mm = '0' + mm;
+            if(dd < 10) dd = '0' + dd;
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function getCurrentMonthStr() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            let mm = now.getMonth() + 1;
+            if(mm < 10) mm = '0' + mm;
+            return `${yyyy}-${mm}`;
+        }
+
+        const dateInput = document.getElementById('attendance-date');
+        if(dateInput) dateInput.value = getTodayDateStr();
+        const monthInput = document.getElementById('month-picker');
+        if(monthInput) monthInput.value = getCurrentMonthStr();
+
+        let masterStudents = JSON.parse(localStorage.getItem('tfc_master_students')) || [];
+        let registerRecords = JSON.parse(localStorage.getItem('tfc_register_records')) || {}; 
+        let studentFeeData = JSON.parse(localStorage.getItem('tfc_student_fee_data')) || {};
+        let studentCreds = JSON.parse(localStorage.getItem('tfc_student_creds')) || {};
+        let studentDetails = JSON.parse(localStorage.getItem('tfc_student_details')) || {};
+        let manualStudents = JSON.parse(localStorage.getItem('tfc_manual_students')) || [];
+        let pendingAction = null;
+        let activeReceiptStudentId = null;
+
+        function promptChangeSeason() {
+            playClickSound('toggle');
+            pendingAction = 'season';
+            document.getElementById('modal-title').innerText = '📅 Update Academic Season';
+            document.getElementById('modal-desc').innerText = 'Enter master password (j999) to change season:';
+            document.getElementById('modal-password-input').style.display = 'block';
+            document.getElementById('modal-text-input').style.display = 'block';
+            document.getElementById('modal-text-input').placeholder = 'e.g. 2025-2026';
+            document.getElementById('modal-cancel-btn').style.display = 'block';
+            document.getElementById('modal-confirm-btn').innerText = 'Confirm';
+            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
+            document.getElementById('modal-password-input').value = "";
+            document.getElementById('modal-text-input').value = localStorage.getItem('tfc_active_season') || '2025-2026';
+            document.getElementById('custom-modal').classList.add('active');
+            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
+        }
+
+        function handleDeveloperMenu(targetTab) {
+            const currentRole = localStorage.getItem('tfc_admin_role');
+            if(currentRole === 'developer') {
+                switchTab(targetTab);
+                if(targetTab === 'system') renderActiveSessionsManager();
+            } else {
+                promptDeveloperAccess(targetTab);
+            }
+        }
+
+        function promptDeveloperAccess(targetTab) {
+            playClickSound('toggle');
+            pendingAction = targetTab;
+            document.getElementById('modal-title').innerText = '🔒 Developer Verification';
+            document.getElementById('modal-desc').innerText = 'Enter master password (j999) to access developer section:';
+            document.getElementById('modal-password-input').style.display = 'block';
+            document.getElementById('modal-text-input').style.display = 'none';
+            document.getElementById('modal-cancel-btn').style.display = 'block';
+            document.getElementById('modal-confirm-btn').innerText = 'Confirm';
+            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
+            document.getElementById('modal-password-input').value = "";
+            document.getElementById('custom-modal').classList.add('active');
+            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
+        }
+
+        function promptClearData() {
+            playClickSound('toggle');
+            pendingAction = 'clear';
+            document.getElementById('modal-title').innerText = '🗑️ Clear All Data & Reset';
+            document.getElementById('modal-desc').innerText = 'Enter master password (j999) to erase all data:';
+            document.getElementById('modal-password-input').style.display = 'block';
+            document.getElementById('modal-text-input').style.display = 'none';
+            document.getElementById('modal-cancel-btn').style.display = 'block';
+            document.getElementById('modal-confirm-btn').innerText = 'Confirm';
+            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
+            document.getElementById('modal-password-input').value = "";
+            document.getElementById('custom-modal').classList.add('active');
+            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
+        }
+
+        function closeModal() {
+            playClickSound('toggle');
+            document.getElementById('custom-modal').classList.remove('active');
+            pendingAction = null;
+        }
+
+        function submitModalPassword() {
+            const val = document.getElementById('modal-password-input').value;
+            if(val === 'j999') {
+                playClickSound('success');
+                if(pendingAction === 'season') {
+                    const newSeason = document.getElementById('modal-text-input').value.trim();
+                    if(newSeason) {
+                        localStorage.setItem('tfc_active_season', newSeason);
+                        updateSeasonDisplay();
+                        closeModal();
+                        showGlassAlert('✨ Success', 'Season updated successfully to ' + newSeason);
+                    } else {
+                        closeModal();
+                    }
+                } else if(pendingAction === 'change_admin_id') {
+                    const newId = document.getElementById('modal-text-input').value.trim().toLowerCase();
+                    if(newId) {
+                        localStorage.setItem('tfc_custom_admin_id', newId);
+                        closeModal();
+                        showGlassAlert('✨ Success', 'Admin User ID updated successfully to: ' + newId);
+                    } else {
+                        closeModal();
+                    }
+                } else if(pendingAction === 'credentials') {
+                    closeModal();
+                    switchTab('credentials');
+                } else if(pendingAction === 'system') {
+                    closeModal();
+                    switchTab('system');
+                    renderActiveSessionsManager();
+                } else if(pendingAction && pendingAction.type === 'view_details') {
+                    const studentId = pendingAction.studentId;
+                    closeModal();
+                    const info = studentDetails[studentId];
+                    if(info) {
+                        showGlassAlert('📋 Student Details', `Name: ${info.name}\nFather: ${info.father || 'N/A'}\nMother: ${info.mother || 'N/A'}\nMobile: ${info.mobile || 'N/A'}\nEmail: ${info.email || 'N/A'}\nDOB: ${info.dob || 'N/A'}\nLogin ID: ${info.loginId}\nPassword: ${info.pass}`);
+                    } else {
+                        showGlassAlert('📋 Student Details', `Login ID: ${pendingAction.loginId}\nPassword: ${studentCreds[pendingAction.loginId]}`);
+                    }
+                } else if(pendingAction === 'clear') {
+                    localStorage.clear();
+                    masterStudents = [];
+                    registerRecords = {};
+                    studentFeeData = {};
+                    studentCreds = {};
+                    studentDetails = {};
+                    manualStudents = [];
+                    localStorage.setItem('tfc_active_season', '2025-2026');
+                    closeModal();
+                    showGlassAlert('✨ Success', 'All data cleared successfully!', () => {
+                        renderDailyUI();
+                        renderRegister();
+                        renderFeeLedger();
+                        renderCredentialsManager();
+                        updateSeasonDisplay();
+                    });
+                }
+            } else {
+                showGlassAlert('❌ Access Denied', 'Incorrect password! Access denied.');
+            }
+        }
+
+        document.getElementById('modal-password-input').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') submitModalPassword();
+        });
+
+        function renderActiveSessionsManager() {
+            const container = document.getElementById('active-sessions-list');
+            if(!container) return;
+            container.innerHTML = `<h4 style="color:var(--accent-cyan); margin-bottom:10px; font-size:0.95rem;">Active Login Sessions & Devices:</h4>`;
+
+            let activeSessions = JSON.parse(localStorage.getItem('tfc_active_sessions')) || {};
+            let bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
+
+            if(Object.keys(activeSessions).length === 0) {
+                container.innerHTML += `<div style="color:var(--text-muted); font-size:0.85rem; padding:10px;">No active sessions recorded yet.</div>`;
+                return;
+            }
+
+            for(let uid in activeSessions) {
+                let sess = activeSessions[uid];
+                let isBanned = bannedUsers.includes(sess.userId);
+
+                const item = document.createElement('div');
+                item.className = 'fee-row';
+                item.innerHTML = `
+                    <div class="fee-info">
+                        <h4>User: <code style="color:var(--accent-cyan);">${sess.userId}</code> (${sess.role})</h4>
+                        <p>Logged in at: ${sess.loginTime} on ${sess.date} | Status: <b style="color:${isBanned ? 'var(--accent-red)' : 'var(--accent-green)'};">${isBanned ? 'BANNED' : 'ACTIVE'}</b></p>
+                    </div>
+                    <div class="actions">
+                        <button onclick="forceLogoutUser('${sess.userId}')" style="background:var(--accent-red); color:#fff; padding:6px 10px; font-size:0.75rem;">Logout</button>
+                        <button onclick="toggleBanUser('${sess.userId}')" style="background:${isBanned ? 'var(--accent-green)' : '#ffaa00'}; color:#000; padding:6px 10px; font-size:0.75rem;">${isBanned ? 'Unban' : 'Ban'}</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            }
+        }
+
+        function forceLogoutUser(userId) {
+            playClickSound('toggle');
+            let activeSessions = JSON.parse(localStorage.getItem('tfc_active_sessions')) || {};
+            delete activeSessions[userId];
+            localStorage.setItem('tfc_active_sessions', JSON.stringify(activeSessions));
+            showGlassAlert('⚡ Forced Logout', `User ${userId} has been logged out from their device.`);
+            renderActiveSessionsManager();
+        }
+
+        function toggleBanUser(userId) {
+            playClickSound('toggle');
+            let bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
+            if(bannedUsers.includes(userId)) {
+                bannedUsers = bannedUsers.filter(id => id !== userId);
+                showGlassAlert('✨ Unbanned', `User ${userId} access has been restored.`);
+            } else {
+                bannedUsers.push(userId);
+                showGlassAlert('🚫 Banned', `User ${userId} has been banned from accessing the app.`);
+            }
+            localStorage.setItem('tfc_banned_users', JSON.stringify(bannedUsers));
+            renderActiveSessionsManager();
+        }
+
+        function downloadJSONBackup() {
+            playClickSound('success');
+            const backupData = {
+                season: localStorage.getItem('tfc_active_season') || '2025-2026',
+                students: masterStudents,
+                attendance: registerRecords,
+                fees: studentFeeData,
+                creds: studentCreds,
+                details: studentDetails,
+                manual: manualStudents,
+                timestamp: new Date().toISOString()
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `FTC_Backup_${getTodayDateStr()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showGlassAlert('📥 Backup Downloaded', 'Your complete database backup JSON file has been downloaded successfully.');
+        }
+
+        function restoreJSONBackup() {
+            const fileInput = document.getElementById('restore-file-input');
+            if(!fileInput.files || fileInput.files.length === 0) {
+                showGlassAlert('⚠️ Error', 'Please select a valid backup JSON file first.');
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(parsed.students && parsed.attendance) {
+                        masterStudents = parsed.students;
+                        registerRecords = parsed.attendance;
+                        studentFeeData = parsed.fees || {};
+                        studentCreds = parsed.creds || {};
+                        studentDetails = parsed.details || {};
+                        manualStudents = parsed.manual || [];
+                        if(parsed.season) {
+                            localStorage.setItem('tfc_active_season', parsed.season);
+                        }
+                        saveData();
+                        updateSeasonDisplay();
+                        playClickSound('success');
+                        showGlassAlert('✨ Restore Successful', 'All student data, attendance, and credentials have been successfully restored!');
+                    } else {
+                        showGlassAlert('❌ Invalid File', 'The selected file is not a valid FTC backup format.');
+                    }
+                } catch(err) {
+                    showGlassAlert('❌ Parse Error', 'Could not read the JSON backup file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function saveData() {
+            localStorage.setItem('tfc_master_students', JSON.stringify(masterStudents));
+            localStorage.setItem('tfc_register_records', JSON.stringify(registerRecords));
+            localStorage.setItem('tfc_student_fee_data', JSON.stringify(studentFeeData));
+            localStorage.setItem('tfc_student_creds', JSON.stringify(studentCreds));
+            localStorage.setItem('tfc_student_details', JSON.stringify(studentDetails));
+            localStorage.setItem('tfc_manual_students', JSON.stringify(manualStudents));
+            renderDailyUI();
+            renderRegister();
+            renderFeeLedger();
+            renderCredentialsManager();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section-view').forEach(sec => sec.classList.remove('active'));
+
+            if(tabName === 'daily') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('daily-section').classList.add('active');
+                renderDailyUI();
+            } else if(tabName === 'monthly') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('monthly-section').classList.add('active');
+                renderRegister();
+            } else if(tabName === 'fee') {
+                document.getElementById('fee-section').classList.add('active');
+                renderFeeLedger();
+            } else if(tabName === 'credentials') {
+                document.getElementById('credentials-section').classList.add('active');
+                renderCredentialsManager();
+            } else if(tabName === 'system') {
+                document.getElementById('system-section').classList.add('active');
+                renderActiveSessionsManager();
+            }
+        }
+
+        function addManualStudent() {
+            const input = document.getElementById('student-name-input');
+            const name = input.value.trim();
+            if(!name) return;
+
+            playClickSound('success');
+            const newId = 'st_' + Date.now();
+            masterStudents.push({ id: newId, name: name });
+            manualStudents.push(newId);
+            studentFeeData[newId] = { totalFee: 0, payments: [] };
+
+            input.value = "";
+            saveData();
+        }
+
+        function removeStudent(id) {
+            playClickSound('toggle');
+            masterStudents = masterStudents.filter(s => s.id !== id);
+            manualStudents = manualStudents.filter(mId => mId !== id);
+            delete studentFeeData[id];
+            delete studentDetails[id];
+            saveData();
+        }
+
+        function renderCredentialsManager() {
+            const pendingContainer = document.getElementById('pending-registrations-container');
+            const activeContainer = document.getElementById('credentials-list-container');
+            
+            pendingContainer.innerHTML = "";
+            activeContainer.innerHTML = "";
+
+            let pendingRegs = JSON.parse(localStorage.getItem('tfc_pending_regs')) || [];
+
+            if(pendingRegs.length === 0) {
+                pendingContainer.innerHTML = `<div class="empty-state">No pending registration requests.</div>`;
+            } else {
+                pendingRegs.forEach(req => {
+                    const row = document.createElement('div');
+                    row.className = 'fee-row';
+                    row.innerHTML = `
+                        <div class="fee-info" style="width:100%;">
+                            <h4 style="color:var(--accent-cyan);">${req.name} (Mobile: ${req.mobile})</h4>
+                            <p>Father: ${req.father || 'N/A'} | DOB: ${req.dob || 'N/A'} | Requested: ${req.timestamp}</p>
+                        </div>
+                        <div class="actions">
+                            <button onclick="approveStudentRegistration('${req.id}')" style="background:var(--accent-green); color:#000; padding:6px 12px; font-size:0.8rem;">Approve ✅</button>
+                            <button onclick="rejectStudentRegistration('${req.id}', '${req.mobile}')" style="background:var(--accent-red); color:#fff; padding:6px 12px; font-size:0.8rem;">Reject ❌</button>
+                        </div>
+                    `;
+                    pendingContainer.appendChild(row);
+                });
+            }
+
+            if(masterStudents.length === 0) {
+                activeContainer.innerHTML = `<div class="empty-state">No active students found.</div>`;
+                return;
+            }
+
+            masterStudents.forEach(student => {
+                let isManual = manualStudents.includes(student.id);
+                if(isManual) return;
+
+                let cleanName = student.name.toLowerCase().replace(/[^a-z]/g, '');
+                let matchedLoginId = Object.keys(studentCreds).find(key => key.startsWith(cleanName));
+                if(!matchedLoginId) {
+                    matchedLoginId = cleanName || 'student101';
+                    studentCreds[matchedLoginId] = 'ftc@123';
+                    localStorage.setItem('tfc_student_creds', JSON.stringify(studentCreds));
+                }
+
+                const row = document.createElement('div');
+                row.className = 'fee-row';
+                row.innerHTML = `
+                    <div class="fee-info" style="width:100%;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h4 style="margin:0;">${student.name}</h4>
+                            <span style="font-size:0.75rem; color:var(--accent-cyan);">🔒 Tap to View Details & Credentials</span>
+                        </div>
+                        <div id="cred_view_${student.id}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.1);">
+                            <p><b>Login ID:</b> <code style="color:var(--accent-cyan);">${matchedLoginId}</code> | <b>Password:</b> <code style="color:var(--accent-green);">${studentCreds[matchedLoginId]}</code></p>
+                        </div>
+                    </div>
+                `;
+                row.onclick = function() {
+                    promptViewStudentCredentials(student.id, matchedLoginId);
+                };
+                activeContainer.appendChild(row);
+            });
+        }
+
+        function approveStudentRegistration(reqId) {
+            playClickSound('success');
+            let pendingRegs = JSON.parse(localStorage.getItem('tfc_pending_regs')) || [];
+            let req = pendingRegs.find(r => r.id === reqId);
+            if(!req) return;
+
+            pendingRegs = pendingRegs.filter(r => r.id !== reqId);
+            localStorage.setItem('tfc_pending_regs', JSON.stringify(pendingRegs));
+
+            const newId = 'st_' + Date.now();
+            masterStudents.push({ id: newId, name: req.name });
+            studentFeeData[newId] = { totalFee: 0, payments: [] };
+
+            const cleanName = req.name.toLowerCase().replace(/[^a-z]/g, '');
+            const loginId = cleanName || ('student_' + Math.floor(100 + Math.random() * 900));
+            const loginPass = 'ftc@' + Math.floor(100 + Math.random() * 900);
+            studentCreds[loginId] = loginPass;
+            studentDetails[newId] = {
+                name: req.name,
+                father: req.father,
+                mother: req.mother,
+                mobile: req.mobile,
+                email: req.email,
+                dob: req.dob,
+                loginId: loginId,
+                pass: loginPass
+            };
+
+            saveData();
+            showGlassAlert('🎉 Approved!', `Student ${req.name} has been approved!\nLogin ID: ${loginId}\nPassword: ${loginPass}`);
+        }
+
+        function rejectStudentRegistration(reqId, mobile) {
+            playClickSound('toggle');
+            let pendingRegs = JSON.parse(localStorage.getItem('tfc_pending_regs')) || [];
+            pendingRegs = pendingRegs.filter(r => r.id !== reqId);
+            localStorage.setItem('tfc_pending_regs', JSON.stringify(pendingRegs));
+
+            let rejectedMobiles = JSON.parse(localStorage.getItem('tfc_rejected_mobiles')) || [];
+            if(!rejectedMobiles.includes(mobile)) {
+                rejectedMobiles.push(mobile);
+                localStorage.setItem('tfc_rejected_mobiles', JSON.stringify(rejectedMobiles));
+            }
+
+            renderCredentialsManager();
+            showGlassAlert('🚫 Rejected & Blocked', 'Registration request rejected and mobile number permanently blocked.');
+        }
+
+        function promptViewStudentCredentials(studentId, loginId) {
+            playClickSound('toggle');
+            pendingAction = { type: 'view_details', studentId: studentId, loginId: loginId };
+            document.getElementById('modal-title').innerText = '🔑 Student Details & Credentials';
+            document.getElementById('modal-desc').innerText = 'Enter master password (j999) to view full student profile:';
+            document.getElementById('modal-password-input').style.display = 'block';
+            document.getElementById('modal-text-input').style.display = 'none';
+            document.getElementById('modal-cancel-btn').style.display = 'block';
+            document.getElementById('modal-confirm-btn').innerText = 'View Profile';
+            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
+            document.getElementById('modal-password-input').value = "";
+            document.getElementById('custom-modal').classList.add('active');
+            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
+        }
+
+        function renderFeeLedger() {
+            const container = document.getElementById('fee-list-container');
+            container.innerHTML = "";
+
+            let totalSeasonCollected = 0;
+            let totalSeasonDues = 0;
+
+            if(masterStudents.length === 0) {
+                container.innerHTML = `<div class="empty-state">No students found. Add students in Daily Portal tab first.</div>`;
+                document.getElementById('summary-total-collected').innerText = '₹0';
+                document.getElementById('summary-total-dues').innerText = '₹0';
+                return;
+            }
+
+            masterStudents.forEach(student => {
+                if(!studentFeeData[student.id]) {
+                    studentFeeData[student.id] = { totalFee: 0, payments: [] };
+                }
+                const feeInfo = studentFeeData[student.id];
+                const totalPaid = feeInfo.payments.reduce((sum, p) => sum + p.amount, 0);
+                const dues = feeInfo.totalFee - totalPaid;
+
+                totalSeasonCollected += totalPaid;
+                totalSeasonDues += dues > 0 ? dues : 0;
+
+                const row = document.createElement('div');
+                row.className = 'fee-row';
+                row.innerHTML = `
+                    <div class="fee-info">
+                        <h4 onclick="openReceiptDrawer('${student.id}')" title="Click for Receipt">${student.name} 📝</h4>
+                        <p>Total Fee: ₹${feeInfo.totalFee} | Paid: ₹${totalPaid}</p>
+                    </div>
+                    <div class="fee-stats">
+                        <span>Dues: <b style="color: ${dues > 0 ? 'var(--accent-red)' : 'var(--accent-green)'}">₹${dues}</b></span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            document.getElementById('summary-total-collected').innerText = '₹' + totalSeasonCollected;
+            document.getElementById('summary-total-dues').innerText = '₹' + totalSeasonDues;
+        }
+
+        function openReceiptDrawer(studentId) {
+            playClickSound('toggle');
+            activeReceiptStudentId = studentId;
+            const student = masterStudents.find(s => s.id === studentId);
+            if(!student) return;
+
+            if(!studentFeeData[studentId]) {
+                studentFeeData[studentId] = { totalFee: 0, payments: [] };
+            }
+            const feeInfo = studentFeeData[studentId];
+            const totalPaid = feeInfo.payments.reduce((sum, p) => sum + p.amount, 0);
+            const dues = feeInfo.totalFee - totalPaid;
+
+            document.getElementById('rcpt-name').innerText = student.name;
+            document.getElementById('rcpt-total').innerText = '₹' + feeInfo.totalFee;
+            document.getElementById('rcpt-paid').innerText = '₹' + totalPaid;
+            document.getElementById('rcpt-dues').innerText = '₹' + dues;
+            document.getElementById('set-total-fee-input').value = feeInfo.totalFee;
+            document.getElementById('pay-amount-input').value = '';
+
+            const historyList = document.getElementById('rcpt-history-list');
+            historyList.innerHTML = '';
+
+            if(feeInfo.payments.length === 0) {
+                historyList.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.75rem; padding:10px;">No payments recorded yet.</div>`;
+            } else {
+                feeInfo.payments.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `<span>📅 ${p.date}</span> <b style="color:var(--accent-green);">+₹${p.amount}</b>`;
+                    historyList.appendChild(item);
+                });
+            }
+
+            document.getElementById('receipt-drawer-overlay').classList.add('active');
+            document.getElementById('receipt-slide-panel').classList.add('active');
+        }
+
+        function closeReceiptDrawer() {
+            playClickSound('toggle');
+            document.getElementById('receipt-drawer-overlay').classList.remove('active');
+            document.getElementById('receipt-slide-panel').classList.remove('active');
+            activeReceiptStudentId = null;
+            renderFeeLedger();
+        }
+
+        function updateStudentTotalFee() {
+            if(!activeReceiptStudentId) return;
+            const newTotal = parseFloat(document.getElementById('set-total-fee-input').value);
+            if(isNaN(newTotal) || newTotal < 0) {
+                showGlassAlert('⚠️ Invalid Input', 'Please enter a valid amount.');
+                return;
+            }
+
+            playClickSound('success');
+            studentFeeData[activeReceiptStudentId].totalFee = newTotal;
+            saveData();
+            openReceiptDrawer(activeReceiptStudentId);
+            showGlassAlert('✨ Success', 'Total fee updated successfully!');
+        }
+
+        function recordFeePayment() {
+            if(!activeReceiptStudentId) return;
+            const amt = parseFloat(document.getElementById('pay-amount-input').value);
+            if(isNaN(amt) || amt <= 0) {
+                showGlassAlert('⚠️ Invalid Input', 'Please enter a valid payment amount.');
+                return;
+            }
+
+            playClickSound('success');
+            const todayStr = getTodayDateStr();
+            studentFeeData[activeReceiptStudentId].payments.push({ date: todayStr, amount: amt });
+            saveData();
+            openReceiptDrawer(activeReceiptStudentId);
+            showGlassAlert('✨ Success', `Payment of ₹${amt} recorded for today (${todayStr})!`);
+        }
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        function setDailyStatus(studentId, status) {
+            playClickSound('toggle');
+            const dateStr = document.getElementById('attendance-date').value;
+            const [year, month, day] = dateStr.split('-');
+            const monthKey = `${year}-${month}`;
+            const dayStr = parseInt(day, 10).toString();
+
+            if(!registerRecords[monthKey]) registerRecords[monthKey] = {};
+            if(!registerRecords[monthKey][studentId]) registerRecords[monthKey][studentId] = {};
+
+            registerRecords[monthKey][studentId][dayStr] = status;
+            saveData();
+
+            localStorage.setItem('tfc_live_student_alert', JSON.stringify({
+                studentId: studentId,
+                date: dateStr,
+                status: status,
+                time: new Date().toLocaleTimeString(),
+                timestamp: Date.now()
+            }));
+        }
+
+        function toggleCellStatus(studentId, dayStr) {
+            playClickSound('toggle');
+            const monthKey = document.getElementById('month-picker').value;
+            if(!registerRecords[monthKey]) registerRecords[monthKey] = {};
+            if(!registerRecords[monthKey][studentId]) registerRecords[monthKey][studentId] = {};
+
+            const current = registerRecords[monthKey][studentId][dayStr] || '-';
+            let next = (current === '-') ? 'P' : (current === 'P' ? 'A' : '-');
+
+            registerRecords[monthKey][studentId][dayStr] = next;
+            saveData();
+        }
+
+        function renderStudentView() {
+            checkBanStatus();
+            const studentLoginId = localStorage.getItem('tfc_student_id');
+            const matchedStudent = masterStudents.find(s => {
+                let cleanName = s.name.toLowerCase().replace(/[^a-z]/g, '');
+                return studentLoginId === cleanName || studentLoginId.startsWith(cleanName);
+            });
+
+            const displayContainer = document.getElementById('student-status-display');
+            const titleEl = document.getElementById('student-portal-title');
+
+            if(!matchedStudent) {
+                displayContainer.innerHTML = `<span style="color:var(--accent-red);">Student account record not found. Contact Admin.</span>`;
+                return;
+            }
+
+            if(titleEl) titleEl.innerText = `Welcome, ${matchedStudent.name} 🎓`;
+
+            const selectedDate = document.getElementById('student-view-date').value;
+            const [year, month, day] = selectedDate.split('-');
+            const monthKey = `${year}-${month}`;
+            const dayStr = parseInt(day, 10).toString();
+
+            const status = registerRecords[monthKey]?.[matchedStudent.id]?.[dayStr] || '-';
+
+            let statusHTML = '';
+            if(status === 'P') {
+                statusHTML = `<b style="color:var(--accent-green); font-size: 1.5rem;">🟢 PRESENT (P)</b>`;
+            } else if(status === 'A') {
+                statusHTML = `<b style="color:var(--accent-red); font-size: 1.5rem;">🔴 ABSENT (A)</b>`;
+            } else {
+                statusHTML = `<b style="color:var(--text-muted); font-size: 1.3rem;">⏳ Attendance not marked yet for ${selectedDate}</b>`;
+            }
+
+            displayContainer.innerHTML = `
+                <div style="margin-bottom: 12px; color:var(--text-muted); font-size:0.9rem;">Date: <b>${selectedDate}</b></div>
+                <div style="margin-bottom: 15px;">Status: ${statusHTML}</div>
+                <div style="font-size: 0.85rem; color: var(--accent-cyan); background: rgba(0,243,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    ℹ️ Note: Aap samay par class mein upasthit hain. Yahi aapka live record hai!
+                </div>
+            `;
+        }
+
+        function checkForLiveStudentPopup() {
+            const userRole = localStorage.getItem('tfc_user_role');
+            if(userRole !== 'student') return;
+
+            const studentLoginId = localStorage.getItem('tfc_student_id');
+            const matchedStudent = masterStudents.find(s => {
+                let cleanName = s.name.toLowerCase().replace(/[^a-z]/g, '');
+                return studentLoginId === cleanName || studentLoginId.startsWith(cleanName);
+            });
+
+            if(!matchedStudent) return;
+
+            const alertData = JSON.parse(localStorage.getItem('tfc_live_student_alert'));
+            const lastShown = localStorage.getItem('tfc_last_shown_alert_ts');
+
+            if(alertData && alertData.studentId === matchedStudent.id && (!lastShown || alertData.timestamp > Number(lastShown))) {
+                if(navigator.vibrate) {
+                    navigator.vibrate([250, 100, 250]);
+                }
+                playClickSound('success');
+
+                const hindiMsg = `Namaste ${matchedStudent.name}, aapka attendance ${alertData.date} ko mark kar diya gaya hai. Aap class mein samay par pahunch gaye hain! 🌟`;
+                document.getElementById('student-popup-msg').innerText = hindiMsg;
+                document.getElementById('student-popup-overlay').classList.add('active');
+
+                localStorage.setItem('tfc_last_shown_alert_ts', alertData.timestamp);
+            }
+        }
+
+        function closeStudentPopup() {
+            playClickSound('toggle');
+            document.getElementById('student-popup-overlay').classList.remove('active');
+            renderStudentView();
+        }
+
+        function generateDailyText() {
+            const dateStr = document.getElementById('attendance-date').value;
+            const activeSeason = localStorage.getItem('tfc_active_season') || '2025-2026';
+            let content = `FUTURE TARGET CLASS (Season: ${activeSeason})\nBy : Md Amzad Sir\n📞 082103 90072 | 📍 Khadda Rahimpur\nDate: ${dateStr}\n----------------------------------------\n`;
+            
+            masterStudents.forEach((s, idx) => {
+                const [year, month, day] = dateStr.split('-');
+                const monthKey = `${year}-${month}`;
+                const dayStr = parseInt(day, 10).toString();
+                const status = (registerRecords[monthKey] && registerRecords[monthKey][s.id] && registerRecords[monthKey][s.id][dayStr]) || '-';
+                content += `${idx + 1}. ${s.name} - [ ${status} ]\n`;
+            });
+            content += `----------------------------------------\nDeveloped by Genius Jamal 👑`;
+            return content;
+        }
+
+        function generateMonthlyText() {
+            const monthKey = document.getElementById('month-picker').value;
+            const activeSeason = localStorage.getItem('tfc_active_season') || '2025-2026';
+            let content = `FUTURE TARGET CLASS (Season: ${activeSeason})\nBy : Md Amzad Sir\n📞 082103 90072 | 📍 Khadda Rahimpur\nMonth: ${monthKey}\n----------------------------------------\n`;
+            
+            masterStudents.forEach((s, idx) => {
+                const [year, month] = monthKey.split('-').map(Number);
+                const totalDays = getDaysInMonth(year, month);
+                let p = 0, a = 0;
+                for(let d=1; d<=totalDays; d++) {
+                    const st = registerRecords[monthKey]?.[s.id]?.[d.toString()] || '-';
+                    if(st === 'P') p++; else if(st === 'A') a++;
+                }
+                content += `${idx + 1}. ${s.name} -> Present: ${p}, Absent: ${a}\n`;
+            });
+            content += `----------------------------------------\nDeveloped by Genius Jamal 👑`;
+            return content;
+        }
+
+        function generateFeeText() {
+            const activeSeason = localStorage.getItem('tfc_active_season') || '2025-2026';
+            let content = `FUTURE TARGET CLASS - FEE LEDGER & DUES (Season: ${activeSeason})\nBy : Md Amzad Sir\n📞 082103 90072 | 📍 Khadda Rahimpur\n----------------------------------------\n`;
+            
+            masterStudents.forEach((s, idx) => {
+                const feeInfo = studentFeeData[s.id] || { totalFee: 0, payments: [] };
+                const totalPaid = feeInfo.payments.reduce((sum, p) => sum + p.amount, 0);
+                const dues = feeInfo.totalFee - totalPaid;
+                content += `${idx + 1}. ${s.name} -> Total: ₹${feeInfo.totalFee}, Paid: ₹${totalPaid}, Dues: ₹${dues}\n`;
+            });
+            content += `----------------------------------------\nDeveloped by Genius Jamal 👑`;
+            return content;
+        }
+
+        function shareDailyReport() {
+            const text = generateDailyText();
+            if (navigator.share) {
+                navigator.share({ title: 'FTC Attendance', text: text }).catch(() => {});
+            } else {
+                triggerTxtDownload(text, 'Daily_Attendance.txt');
+            }
+        }
+
+        function shareMonthlyReport() {
+            const text = generateMonthlyText();
+            if (navigator.share) {
+                navigator.share({ title: 'FTC Monthly Register', text: text }).catch(() => {});
+            } else {
+                triggerTxtDownload(text, 'Monthly_Register.txt');
+            }
+        }
+
+        function downloadMonthlyTxt() {
+            const text = generateMonthlyText();
+            const monthKey = document.getElementById('month-picker').value;
+            triggerTxtDownload(text, `Monthly_Report_${monthKey}.txt`);
+        }
+
+        function shareFeeReport() {
+            const text = generateFeeText();
+            if (navigator.share) {
+                navigator.share({ title: 'FTC Fee Ledger', text: text }).catch(() => {});
+            } else {
+                triggerTxtDownload(text, 'Fee_Ledger_Report.txt');
+            }
+        }
+
+        function downloadFeeTxt() {
+            const text = generateFeeText();
+            triggerTxtDownload(text, 'Fee_Ledger_Report.txt');
+        }
+
+        function triggerTxtDownload(text, filename) {
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function renderDailyUI() {
+            const container = document.getElementById('daily-list-container');
+            if(!container) return;
+            container.innerHTML = "";
+
+            if(masterStudents.length === 0) {
+                container.innerHTML = `<div class="empty-state">No students added yet. Add manual students or approve registrations.</div>`;
+                document.getElementById('total-count').innerText = 0;
+                document.getElementById('present-count').innerText = 0;
+                document.getElementById('absent-count').innerText = 0;
+                return;
+            }
+
+            const dateStr = document.getElementById('attendance-date').value;
+            const [year, month, day] = dateStr.split('-');
+            const monthKey = `${year}-${month}`;
+            const dayStr = parseInt(day, 10).toString();
+
+            const maxDays = getDaysInMonth(parseInt(year, 10), parseInt(month, 10));
+            if (parseInt(day, 10) > maxDays) {
+                container.innerHTML = `<div class="empty-state" style="color:var(--accent-red);">Selected month only has ${maxDays} days!</div>`;
+                return;
+            }
+
+            if(!registerRecords[monthKey]) registerRecords[monthKey] = {};
+
+            let presentCount = 0;
+            let absentCount = 0;
+
+            masterStudents.forEach(student => {
+                if(!registerRecords[monthKey][student.id]) registerRecords[monthKey][student.id] = {};
+                if(!registerRecords[monthKey][student.id][dayStr]) {
+                    registerRecords[monthKey][student.id][dayStr] = '-';
+                }
+
+                if(!studentFeeData[student.id]) {
+                    studentFeeData[student.id] = { totalFee: 0, payments: [] };
+                }
+
+                const status = registerRecords[monthKey][student.id][dayStr];
+                if(status === 'P') presentCount++;
+                else if(status === 'A') absentCount++;
+
+                let isManual = manualStudents.includes(student.id);
+
+                const row = document.createElement('div');
+                row.className = 'student-row';
+                row.innerHTML = `
+                    <span class="student-name" onclick="switchTab('fee'); openReceiptDrawer('${student.id}')" title="View Fee Ledger" style="${isManual ? 'font-weight:700; color:#ffaa00;' : ''}">${student.name} ${isManual ? '✍️ (Manual)' : ''}</span>
+                    <div class="actions">
+                        <button class="btn-status btn-present ${status === 'P' ? 'active' : ''}" onclick="setDailyStatus('${student.id}', 'P')">P</button>
+                        <button class="btn-status btn-absent ${status === 'A' ? 'active' : ''}" onclick="setDailyStatus('${student.id}', 'A')">A</button>
+                        <button class="btn-delete-mini" onclick="removeStudent('${student.id}')" title="Delete">×</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            document.getElementById('total-count').innerText = masterStudents.length;
+            document.getElementById('present-count').innerText = presentCount;
+            document.getElementById('absent-count').innerText = absentCount;
+        }
+
+        function renderRegister() {
+            const wrapper = document.getElementById('register-table-wrapper');
+            if(!wrapper) return;
+            wrapper.innerHTML = "";
+
+            if(masterStudents.length === 0) {
+                wrapper.innerHTML = `<div class="empty-state">No students found. Add students in Daily Portal tab.</div>`;
+                return;
+            }
+
+            const monthKey = document.getElementById('month-picker').value;
+            const [year, month] = monthKey.split('-').map(Number);
+            const totalDays = getDaysInMonth(year, month);
+
+            if(!registerRecords[monthKey]) registerRecords[monthKey] = {};
+
+            let tableHTML = `
+                <table class="register-table">
+                    <thead>
+                        <tr>
+                            <th class="name-col sticky-header">Student Name</th>
+            `;
+
+            for(let d = 1; d <= totalDays; d++) {
+                tableHTML += `<th>${d}</th>`;
+            }
+            tableHTML += `<th>Tot P</th><th>Tot A</th></tr></thead><tbody>`;
+
+            masterStudents.forEach(student => {
+                if(!registerRecords[monthKey][student.id]) registerRecords[monthKey][student.id] = {};
+
+                let isManual = manualStudents.includes(student.id);
+                let nameStyle = isManual ? 'font-weight:700; color:#ffaa00;' : '';
+
+                tableHTML += `<tr>`;
+                tableHTML += `<td class="name-col" style="${nameStyle}">${student.name}</td>`;
+
+                let totalP = 0;
+                let totalA = 0;
+
+                for(let d = 1; d <= totalDays; d++) {
+                    const dayStr = d.toString();
+                    let status = registerRecords[monthKey][student.id][dayStr] || '-';
+
+                    if(status === 'P') totalP++;
+                    else if(status === 'A') totalA++;
+
+                    let statusClass = 'status-dash';
+                    if(status === 'P') statusClass = 'status-p';
+                    else if(status === 'A') statusClass = 'status-a';
+
+                    tableHTML += `<td class="attendance-cell ${statusClass}" onclick="toggleCellStatus('${student.id}', '${dayStr}')" title="Click to change">${status}</td>`;
+                }
+
+                tableHTML += `<td style="font-weight:700; color:var(--accent-green);">${totalP}</td>`;
+                tableHTML += `<td style="font-weight:700; color:var(--accent-red);">${totalA}</td>`;
+                tableHTML += `</tr>`;
+            });
+
+            tableHTML += `</tbody></table>`;
+            wrapper.innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>
