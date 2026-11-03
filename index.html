@@ -860,7 +860,7 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
-            z-index: 99999;
+            z-index: 999999;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -898,6 +898,7 @@
             font-size: 0.9rem;
             margin-bottom: 20px;
             line-height: 1.4;
+            white-space: pre-line;
         }
 
         .glass-modal input[type="password"], .glass-modal input[type="text"] {
@@ -960,6 +961,20 @@
         </div>
     </div>
 
+    <!-- Custom Modal moved outside #main-app-wrapper so alerts work on Login screen too -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="glass-modal">
+            <h3 id="modal-title">🔒 Security Verification</h3>
+            <p id="modal-desc">Enter password to proceed:</p>
+            <input type="password" id="modal-password-input" placeholder="••••" autocomplete="current-password" style="display:none;">
+            <input type="text" id="modal-text-input" placeholder="" style="display:none;">
+            <div class="modal-actions" id="modal-actions-container">
+                <button class="btn-cancel" id="modal-cancel-btn" onclick="closeModal()">Cancel</button>
+                <button id="modal-confirm-btn" onclick="submitModalPassword()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <div id="login-wrapper">
         <canvas id="molecule-canvas"></canvas>
         <div class="login-card">
@@ -969,7 +984,7 @@
             <div id="login-form-container">
                 <div class="login-input-group">
                     <label>Admin ID or Student ID</label>
-                    <input type="text" id="login-id-input" placeholder="Enter ID" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <input type="text" id="login-id-input" placeholder="Enter ID (e.g. ftc)" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
                 
                 <div class="login-input-group">
@@ -1020,19 +1035,6 @@
     </div>
 
     <div id="main-app-wrapper">
-        <div id="custom-modal" class="modal-overlay">
-            <div class="glass-modal">
-                <h3 id="modal-title">🔒 Security Verification</h3>
-                <p id="modal-desc">Enter password to proceed:</p>
-                <input type="password" id="modal-password-input" placeholder="••••" autocomplete="current-password" style="display:none;">
-                <input type="text" id="modal-text-input" placeholder="" style="display:none;">
-                <div class="modal-actions" id="modal-actions-container">
-                    <button class="btn-cancel" id="modal-cancel-btn" onclick="closeModal()">Cancel</button>
-                    <button id="modal-confirm-btn" onclick="submitModal()">Confirm</button>
-                </div>
-            </div>
-        </div>
-
         <div id="receipt-drawer-overlay" class="receipt-drawer-overlay" onclick="closeReceiptDrawer()"></div>
         <div id="receipt-slide-panel" class="receipt-slide-panel">
             <div class="receipt-header">
@@ -1089,6 +1091,7 @@
             <button class="drawer-menu-link" onclick="toggleSettingsDrawer(); switchTab('credentials')">🔑 Student ID & Pass Credentials</button>
             <button class="drawer-menu-link" id="menu-link-system" onclick="toggleSettingsDrawer(); handleDeveloperMenu('system')">🛠️ System Management (Backup)</button>
             <button class="drawer-menu-link drawer-menu-danger" onclick="toggleSettingsDrawer(); promptClearData()">🗑️ Clear Data & Reset</button>
+            <button class="drawer-menu-link" onclick="toggleSettingsDrawer(); promptChangeAdminId()">✏️ Change Admin User ID</button>
 
             <div class="setting-item">
                 <span>☀️ Light / Normal Mode</span>
@@ -1114,7 +1117,7 @@
             </div>
 
             <div style="margin-top: 25px; font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
-                Future Target Class OS v19.3<br><br>
+                Future Target Class OS v20.0<br><br>
                 <b>⚡ Developed by Genius Jamal 👑</b>
             </div>
         </div>
@@ -1217,7 +1220,7 @@
             <div id="credentials-section" class="section-view">
                 <div class="card">
                     <h3 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 10px;">🔑 Pending Student Registrations & Approvals</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Review self-registered students and approve them to generate credentials and add them to attendance list.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Review self-registered students. Approve them or reject them permanently.</p>
                     <div class="list-container" id="pending-registrations-container"></div>
                 </div>
 
@@ -1274,7 +1277,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: var(--text-muted);">
-            Future Target Class OS v19.3 | Developed by Genius Jamal 👑
+            Future Target Class OS v20.0 | Developed by Genius Jamal 👑
         </div>
     </div>
 
@@ -1375,7 +1378,18 @@
             document.getElementById('custom-modal').classList.add('active');
         }
 
+        function sanitizeAdminBans() {
+            const activeAdminId = (localStorage.getItem('tfc_custom_admin_id') || 'ftc').trim().toLowerCase();
+            const protectedIds = ['jamal', 'ftc', 'admin', 'amzad', activeAdminId];
+            let bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
+            const filtered = bannedUsers.filter(u => !protectedIds.includes(u.toLowerCase()));
+            if (filtered.length !== bannedUsers.length) {
+                localStorage.setItem('tfc_banned_users', JSON.stringify(filtered));
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
+            sanitizeAdminBans();
             checkBanStatus();
             const activeSessionLogin = localStorage.getItem('tfc_permanent_logged_in');
             const userRole = localStorage.getItem('tfc_user_role');
@@ -1397,7 +1411,9 @@
         });
 
         function checkBanStatus() {
-            const currentUserId = localStorage.getItem('tfc_student_id') || localStorage.getItem('tfc_admin_id');
+            const userRole = localStorage.getItem('tfc_user_role');
+            if(userRole === 'admin') return;
+            const currentUserId = localStorage.getItem('tfc_student_id');
             const bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
             if(currentUserId && bannedUsers.includes(currentUserId)) {
                 alert('Your account has been banned by the developer.');
@@ -1418,7 +1434,6 @@
             }
         }
 
-        // FIXED REGISTRATION WITH GUARANTEED NATIVE ALERT & REDIRECT
         function handleStudentSelfRegister() {
             const name = document.getElementById('reg-name').value.trim();
             const father = document.getElementById('reg-father').value.trim();
@@ -1428,7 +1443,13 @@
             const dob = document.getElementById('reg-dob').value;
 
             if(!name || !mobile) {
-                alert('⚠️ Please fill at least Student Name and Mobile Number.');
+                showGlassAlert('⚠️ Missing Details', 'Please fill at least Student Name and Mobile Number.');
+                return;
+            }
+
+            let rejectedMobiles = JSON.parse(localStorage.getItem('tfc_rejected_mobiles')) || [];
+            if(rejectedMobiles.includes(mobile)) {
+                showGlassAlert('🚫 Registration Blocked', 'This mobile number is permanently blocked.');
                 return;
             }
 
@@ -1439,7 +1460,7 @@
                          pendingRegs.some(r => r.mobile === mobile || r.name.toLowerCase() === name.toLowerCase());
 
             if(exists) {
-                alert('⚠️ A student with this Name or Mobile Number already exists or request is already pending!');
+                showGlassAlert('⚠️ Duplicate Entry', 'A student with this Name or Mobile Number already exists or request is already pending!');
                 return;
             }
 
@@ -1458,7 +1479,7 @@
             pendingRegs.push(newReq);
             localStorage.setItem('tfc_pending_regs', JSON.stringify(pendingRegs));
 
-            alert('✨ Registration Successful! Aapka registration request Admin ke paas bhej diya gaya hai. Approval milne par aapko ID & Password mil jayega.');
+            showGlassAlert('✨ Registration Successful!', 'Aapka registration request Admin ke paas bhej diya gaya hai.');
             
             document.getElementById('reg-name').value = '';
             document.getElementById('reg-father').value = '';
@@ -1517,23 +1538,33 @@
         }
 
         function handleLogin() {
-            const idVal = document.getElementById('login-id-input').value.trim().toLowerCase();
+            sanitizeAdminBans();
+            let idVal = document.getElementById('login-id-input').value.trim().toLowerCase();
             const passVal = document.getElementById('login-pass-input').value.trim();
+            const passLower = passVal.toLowerCase();
 
-            const bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
-            if(bannedUsers.includes(idVal)) {
-                showGlassAlert('❌ Access Banned', 'Your account has been banned by the developer.');
+            if(!idVal || !passVal) {
+                showGlassAlert('⚠️ Missing Input', 'Kripya ID aur Password dono enter karein!');
                 return;
             }
 
             const now = new Date();
-            const hours = now.getHours();
+            const hours24 = now.getHours();
+            const hours12 = hours24 % 12 || 12;
             const minutes = now.getMinutes();
-            const hh = hours < 10 ? '0' + hours : '' + hours;
-            const mm = minutes < 10 ? '0' + minutes : '' + minutes;
-            const correctTimePass = hh + mm;
 
-            if(idVal === 'jamal' && passVal === '931825722953') {
+            const hh24 = hours24 < 10 ? '0' + hours24 : '' + hours24;
+            const hh12 = hours12 < 10 ? '0' + hours12 : '' + hours12;
+            const mm = minutes < 10 ? '0' + minutes : '' + minutes;
+
+            const correctTimePass24 = hh24 + mm;
+            const correctTimePass12 = hh12 + mm;
+
+            let activeAdminId = (localStorage.getItem('tfc_custom_admin_id') || 'ftc').trim().toLowerCase();
+            const validAdminIds = [activeAdminId, 'ftc', 'admin', 'amzad'];
+
+            // 1. Developer Login
+            if(idVal === 'jamal' && (passVal === '931825722953' || passLower === 'j999')) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
                 localStorage.setItem('tfc_admin_role', 'developer');
@@ -1547,22 +1578,31 @@
                 return;
             }
 
-            if(idVal === 'ftc' && (passVal === correctTimePass || passVal === 'j999')) {
+            // 2. Admin Login (Supports ftc/admin/amzad + 24hr time, 12hr time, or j999)
+            if(validAdminIds.includes(idVal) && (passVal === correctTimePass24 || passVal === correctTimePass12 || passLower === 'j999')) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
                 localStorage.setItem('tfc_admin_role', 'admin');
-                localStorage.setItem('tfc_admin_id', 'ftc');
+                localStorage.setItem('tfc_admin_id', idVal);
                 playClickSound('success');
                 document.getElementById('login-wrapper').style.display = 'none';
                 document.getElementById('main-app-wrapper').style.display = 'block';
                 applyRolePermissions();
                 renderDailyUI();
-                registerActiveSession('ftc', 'Admin');
+                registerActiveSession(idVal, 'Admin');
                 return;
             }
 
+            // Check ban status for students
+            const bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
+            if(bannedUsers.includes(idVal)) {
+                showGlassAlert('❌ Access Banned', 'Your account has been banned by the developer.');
+                return;
+            }
+
+            // 3. Student Login
             let studentCreds = JSON.parse(localStorage.getItem('tfc_student_creds')) || {};
-            if(studentCreds[idVal] && studentCreds[idVal] === passVal) {
+            if(studentCreds[idVal] && studentCreds[idVal].toLowerCase() === passLower) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'student');
                 localStorage.setItem('tfc_student_id', idVal);
@@ -1576,7 +1616,24 @@
                 return;
             }
 
-            showGlassAlert('⚠️ Login Failed', 'Invalid ID or Password!');
+            showGlassAlert('⚠️ Login Failed', `Invalid ID or Password!\nAdmin Login ke liye ID: "${activeAdminId}" aur Password: "${correctTimePass12}" (Time) ya "j999" use karein.`);
+        }
+
+        function promptChangeAdminId() {
+            playClickSound('toggle');
+            pendingAction = 'change_admin_id';
+            document.getElementById('modal-title').innerText = '✏️ Change Admin User ID';
+            document.getElementById('modal-desc').innerText = 'Enter master password (j999) to change Admin User ID:';
+            document.getElementById('modal-password-input').style.display = 'block';
+            document.getElementById('modal-text-input').style.display = 'block';
+            document.getElementById('modal-text-input').placeholder = 'Enter new Admin ID (e.g. amzad)';
+            document.getElementById('modal-text-input').value = localStorage.getItem('tfc_custom_admin_id') || 'ftc';
+            document.getElementById('modal-cancel-btn').style.display = 'block';
+            document.getElementById('modal-confirm-btn').innerText = 'Update ID';
+            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
+            document.getElementById('modal-password-input').value = "";
+            document.getElementById('custom-modal').classList.add('active');
+            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
         }
 
         function registerActiveSession(userId, role) {
@@ -1681,6 +1738,7 @@
             document.getElementById('modal-desc').innerText = 'Enter master password (j999) to change season:';
             document.getElementById('modal-password-input').style.display = 'block';
             document.getElementById('modal-text-input').style.display = 'block';
+            document.getElementById('modal-text-input').placeholder = 'e.g. 2025-2026';
             document.getElementById('modal-cancel-btn').style.display = 'block';
             document.getElementById('modal-confirm-btn').innerText = 'Confirm';
             document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
@@ -1737,7 +1795,7 @@
         }
 
         function submitModalPassword() {
-            const val = document.getElementById('modal-password-input').value;
+            const val = document.getElementById('modal-password-input').value.trim().toLowerCase();
             if(val === 'j999') {
                 playClickSound('success');
                 if(pendingAction === 'season') {
@@ -1747,6 +1805,15 @@
                         updateSeasonDisplay();
                         closeModal();
                         showGlassAlert('✨ Success', 'Season updated successfully to ' + newSeason);
+                    } else {
+                        closeModal();
+                    }
+                } else if(pendingAction === 'change_admin_id') {
+                    const newId = document.getElementById('modal-text-input').value.trim().toLowerCase();
+                    if(newId) {
+                        localStorage.setItem('tfc_custom_admin_id', newId);
+                        closeModal();
+                        showGlassAlert('✨ Success', 'Admin User ID updated successfully to: ' + newId);
                     } else {
                         closeModal();
                     }
@@ -1809,6 +1876,7 @@
             for(let uid in activeSessions) {
                 let sess = activeSessions[uid];
                 let isBanned = bannedUsers.includes(sess.userId);
+                let isAdminOrDev = sess.role === 'Admin' || sess.role === 'Developer';
 
                 const item = document.createElement('div');
                 item.className = 'fee-row';
@@ -1819,7 +1887,7 @@
                     </div>
                     <div class="actions">
                         <button onclick="forceLogoutUser('${sess.userId}')" style="background:var(--accent-red); color:#fff; padding:6px 10px; font-size:0.75rem;">Logout</button>
-                        <button onclick="toggleBanUser('${sess.userId}')" style="background:${isBanned ? 'var(--accent-green)' : '#ffaa00'}; color:#000; padding:6px 10px; font-size:0.75rem;">${isBanned ? 'Unban' : 'Ban'}</button>
+                        ${!isAdminOrDev ? `<button onclick="toggleBanUser('${sess.userId}')" style="background:${isBanned ? 'var(--accent-green)' : '#ffaa00'}; color:#000; padding:6px 10px; font-size:0.75rem;">${isBanned ? 'Unban' : 'Ban'}</button>` : ''}
                     </div>
                 `;
                 container.appendChild(item);
@@ -1837,6 +1905,11 @@
 
         function toggleBanUser(userId) {
             playClickSound('toggle');
+            const activeAdminId = (localStorage.getItem('tfc_custom_admin_id') || 'ftc').trim().toLowerCase();
+            if(['jamal', 'ftc', 'admin', 'amzad', activeAdminId].includes(userId.toLowerCase())) {
+                showGlassAlert('⚠️ Action Not Allowed', 'Admin ya Developer account ko ban nahi kiya ja sakta.');
+                return;
+            }
             let bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
             if(bannedUsers.includes(userId)) {
                 bannedUsers = bannedUsers.filter(id => id !== userId);
@@ -1989,6 +2062,7 @@
                         </div>
                         <div class="actions">
                             <button onclick="approveStudentRegistration('${req.id}')" style="background:var(--accent-green); color:#000; padding:6px 12px; font-size:0.8rem;">Approve ✅</button>
+                            <button onclick="rejectStudentRegistration('${req.id}', '${req.mobile}')" style="background:var(--accent-red); color:#fff; padding:6px 12px; font-size:0.8rem;">Reject ❌</button>
                         </div>
                     `;
                     pendingContainer.appendChild(row);
@@ -2062,6 +2136,22 @@
 
             saveData();
             showGlassAlert('🎉 Approved!', `Student ${req.name} has been approved!\nLogin ID: ${loginId}\nPassword: ${loginPass}`);
+        }
+
+        function rejectStudentRegistration(reqId, mobile) {
+            playClickSound('toggle');
+            let pendingRegs = JSON.parse(localStorage.getItem('tfc_pending_regs')) || [];
+            pendingRegs = pendingRegs.filter(r => r.id !== reqId);
+            localStorage.setItem('tfc_pending_regs', JSON.stringify(pendingRegs));
+
+            let rejectedMobiles = JSON.parse(localStorage.getItem('tfc_rejected_mobiles')) || [];
+            if(!rejectedMobiles.includes(mobile)) {
+                rejectedMobiles.push(mobile);
+                localStorage.setItem('tfc_rejected_mobiles', JSON.stringify(rejectedMobiles));
+            }
+
+            renderCredentialsManager();
+            showGlassAlert('🚫 Rejected & Blocked', 'Registration request rejected and mobile number permanently blocked.');
         }
 
         function promptViewStudentCredentials(studentId, loginId) {
