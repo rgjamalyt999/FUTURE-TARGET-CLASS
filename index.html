@@ -396,11 +396,11 @@
         input:checked + .slider { background-color: var(--accent-cyan); }
         input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
 
-        /* Stacked Vertical Option Style Tabs (Upar-Niche) */
+        /* Premium App-Like Vertical Option Tabs with Neon Glow & Gradient Fill */
         .tabs {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 18px;
         }
 
@@ -413,32 +413,44 @@
             backdrop-filter: var(--glass-blur);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            padding: 14px 16px;
-            border-radius: 12px;
+            padding: 15px 18px;
+            border-radius: 14px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
+            font-weight: 700;
+            font-size: 1rem;
             text-align: left;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-btn span {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.4px;
         }
 
         .tab-btn::after {
-            content: '▸';
-            font-size: 1rem;
-            transition: transform 0.25s ease;
+            content: '›';
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: transform 0.3s ease;
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, rgba(0, 243, 255, 0.22), rgba(0, 102, 255, 0.22));
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.28), rgba(0, 102, 255, 0.35));
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.55), inset 0 0 12px rgba(0, 243, 255, 0.2);
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+            transform: scale(1.01);
         }
 
         .tab-btn.active::after {
-            content: '▾';
+            content: '▼';
+            font-size: 0.85rem;
             color: var(--accent-cyan);
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
         }
 
         .section-view {
@@ -637,7 +649,7 @@
         }
 
         .btn-absent {
-            background: rgba(0, 255, 51, 0.1);
+            background: rgba(255, 51, 51, 0.1);
             color: var(--accent-red);
             border-color: rgba(255, 51, 51, 0.3);
         }
@@ -1195,13 +1207,13 @@
                 📅 Active Academic Season: <b id="current-season-text">2025-2026</b> (Tap to Edit)
             </div>
 
-            <!-- Upar-Niche Stacked Option Style Buttons -->
+            <!-- Premium Stacked Option Tabs without 'Option 1/2' and with glow/gradient fill -->
             <div class="tabs">
                 <button class="tab-btn active" onclick="playClickSound(); switchTab('daily')">
-                    <span>📅 Option 1: Daily Attendance Portal</span>
+                    <span>⚡ Daily Attendance Portal</span>
                 </button>
                 <button class="tab-btn" onclick="playClickSound(); switchTab('monthly')">
-                    <span>📊 Option 2: Monthly Register Report</span>
+                    <span>📊 Monthly Register Report</span>
                 </button>
             </div>
 
@@ -1568,6 +1580,7 @@
             if(el) el.innerText = season;
         }
 
+        // Premium Soft Smooth Synth Sound Effect Generator
         function playClickSound(type = 'success') {
             const soundEnabled = JSON.parse(localStorage.getItem('tfc_sound_enabled')) ?? true;
             if(!soundEnabled) return;
@@ -1579,21 +1592,21 @@
                 gain.connect(audioCtx.destination);
 
                 if(type === 'success') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(1174.66, audioCtx.currentTime + 0.12);
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 note
+                    osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.15); // G5 note
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
                     osc.start();
-                    osc.stop(audioCtx.currentTime + 0.18);
+                    osc.stop(audioCtx.currentTime + 0.22);
                 } else if(type === 'toggle') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.08);
-                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(392.00, audioCtx.currentTime); // G4 note
+                    osc.frequency.exponentialRampToValueAtTime(523.25, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
                     osc.start();
-                    osc.stop(audioCtx.currentTime + 0.1);
+                    osc.stop(audioCtx.currentTime + 0.14);
                 }
             } catch(e) {}
         }
