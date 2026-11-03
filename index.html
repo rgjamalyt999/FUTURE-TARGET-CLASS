@@ -1089,7 +1089,6 @@
             <button class="drawer-menu-link" onclick="toggleSettingsDrawer(); switchTab('credentials')">🔑 Student ID & Pass Credentials</button>
             <button class="drawer-menu-link" id="menu-link-system" onclick="toggleSettingsDrawer(); handleDeveloperMenu('system')">🛠️ System Management (Backup)</button>
             <button class="drawer-menu-link drawer-menu-danger" onclick="toggleSettingsDrawer(); promptClearData()">🗑️ Clear Data & Reset</button>
-            <button class="drawer-menu-link" onclick="toggleSettingsDrawer(); promptChangeAdminId()">✏️ Change Admin User ID</button>
 
             <div class="setting-item">
                 <span>☀️ Light / Normal Mode</span>
@@ -1115,7 +1114,7 @@
             </div>
 
             <div style="margin-top: 25px; font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
-                Future Target Class OS v24.0<br><br>
+                Future Target Class OS v25.0<br><br>
                 <b>⚡ Developed by Genius Jamal 👑</b>
             </div>
         </div>
@@ -1532,14 +1531,11 @@
                 return;
             }
 
+            // FIXED: Ensuring 4-digit zero-padded time password (e.g. 0507)
             const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const hh = hours < 10 ? '0' + hours : '' + hours;
-            const mm = minutes < 10 ? '0' + minutes : '' + minutes;
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
             const correctTimePass = hh + mm;
-
-            let activeAdminId = localStorage.getItem('tfc_custom_admin_id') || 'ftc';
 
             // Developer Login Check
             if(idVal === 'jamal' && passVal === '931825722953') {
@@ -1556,18 +1552,18 @@
                 return;
             }
 
-            // Admin Time-Based Login Check (Strictly Time Password Only)
-            if(idVal === activeAdminId && passVal === correctTimePass) {
+            // Admin Time-Based Login Check (Strictly Time Password Only - e.g. FTC & HHMM)
+            if(idVal === 'ftc' && passVal === correctTimePass) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
                 localStorage.setItem('tfc_admin_role', 'admin');
-                localStorage.setItem('tfc_admin_id', activeAdminId);
+                localStorage.setItem('tfc_admin_id', 'ftc');
                 playClickSound('success');
                 document.getElementById('login-wrapper').style.display = 'none';
                 document.getElementById('main-app-wrapper').style.display = 'block';
                 applyRolePermissions();
                 renderDailyUI();
-                registerActiveSession(activeAdminId, 'Admin');
+                registerActiveSession('ftc', 'Admin');
                 return;
             }
 
@@ -1587,23 +1583,6 @@
             }
 
             showGlassAlert('⚠️ Login Failed', 'Invalid ID or Password!');
-        }
-
-        function promptChangeAdminId() {
-            playClickSound('toggle');
-            pendingAction = 'change_admin_id';
-            document.getElementById('modal-title').innerText = '✏️ Change Admin User ID';
-            document.getElementById('modal-desc').innerText = 'Enter master password (j999) to change Admin User ID:';
-            document.getElementById('modal-password-input').style.display = 'block';
-            document.getElementById('modal-text-input').style.display = 'block';
-            document.getElementById('modal-text-input').placeholder = 'Enter new Admin ID (e.g. amzad)';
-            document.getElementById('modal-text-input').value = localStorage.getItem('tfc_custom_admin_id') || 'ftc';
-            document.getElementById('modal-cancel-btn').style.display = 'block';
-            document.getElementById('modal-confirm-btn').innerText = 'Update ID';
-            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
-            document.getElementById('modal-password-input').value = "";
-            document.getElementById('custom-modal').classList.add('active');
-            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
         }
 
         function registerActiveSession(userId, role) {
@@ -1775,15 +1754,6 @@
                         updateSeasonDisplay();
                         closeModal();
                         showGlassAlert('✨ Success', 'Season updated successfully to ' + newSeason);
-                    } else {
-                        closeModal();
-                    }
-                } else if(pendingAction === 'change_admin_id') {
-                    const newId = document.getElementById('modal-text-input').value.trim().toLowerCase();
-                    if(newId) {
-                        localStorage.setItem('tfc_custom_admin_id', newId);
-                        closeModal();
-                        showGlassAlert('✨ Success', 'Admin User ID updated successfully to: ' + newId);
                     } else {
                         closeModal();
                     }
