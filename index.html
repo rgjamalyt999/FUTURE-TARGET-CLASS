@@ -1114,7 +1114,7 @@
             </div>
 
             <div style="margin-top: 25px; font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4;">
-                Future Target Class OS v28.0<br><br>
+                Future Target Class OS v19.3<br><br>
                 <b>⚡ Developed by Genius Jamal 👑</b>
             </div>
         </div>
@@ -1217,7 +1217,7 @@
             <div id="credentials-section" class="section-view">
                 <div class="card">
                     <h3 style="color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 10px;">🔑 Pending Student Registrations & Approvals</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Review self-registered students. Approve them or reject them permanently.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Review self-registered students and approve them to generate credentials and add them to attendance list.</p>
                     <div class="list-container" id="pending-registrations-container"></div>
                 </div>
 
@@ -1274,7 +1274,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: var(--text-muted);">
-            Future Target Class OS v28.0 | Developed by Genius Jamal 👑
+            Future Target Class OS v19.3 | Developed by Genius Jamal 👑
         </div>
     </div>
 
@@ -1418,6 +1418,7 @@
             }
         }
 
+        // FIXED REGISTRATION WITH GUARANTEED NATIVE ALERT & REDIRECT
         function handleStudentSelfRegister() {
             const name = document.getElementById('reg-name').value.trim();
             const father = document.getElementById('reg-father').value.trim();
@@ -1428,12 +1429,6 @@
 
             if(!name || !mobile) {
                 alert('⚠️ Please fill at least Student Name and Mobile Number.');
-                return;
-            }
-
-            let rejectedMobiles = JSON.parse(localStorage.getItem('tfc_rejected_mobiles')) || [];
-            if(rejectedMobiles.includes(mobile)) {
-                alert('🚫 Registration rejected! This mobile number is permanently blocked.');
                 return;
             }
 
@@ -1463,7 +1458,7 @@
             pendingRegs.push(newReq);
             localStorage.setItem('tfc_pending_regs', JSON.stringify(pendingRegs));
 
-            alert('✨ Registration Successful! Aapka registration request Admin ke paas bhej diya gaya hai.');
+            alert('✨ Registration Successful! Aapka registration request Admin ke paas bhej diya gaya hai. Approval milne par aapko ID & Password mil jayega.');
             
             document.getElementById('reg-name').value = '';
             document.getElementById('reg-father').value = '';
@@ -1531,19 +1526,13 @@
                 return;
             }
 
-            // FOOLPROOF TIME PASSWORD GENERATION (Checks HHMM format in multiple variations)
             const now = new Date();
-            const h24 = now.getHours();
-            const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-            const hh24 = String(h24).padStart(2, '0');
-            const hh12 = String(h12).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const hh = hours < 10 ? '0' + hours : '' + hours;
+            const mm = minutes < 10 ? '0' + minutes : '' + minutes;
+            const correctTimePass = hh + mm;
 
-            const timePass24 = hh24 + mm; // e.g. "0508"
-            const timePass12 = hh12 + mm; // e.g. "0508"
-            const timePassSingleH = h24 + mm; // e.g. "508"
-
-            // Developer Login Check
             if(idVal === 'jamal' && passVal === '931825722953') {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
@@ -1558,8 +1547,7 @@
                 return;
             }
 
-            // Admin Time-Based Login Check (FTC ID with HHMM matching)
-            if(idVal === 'ftc' && (passVal === timePass24 || passVal === timePass12 || passVal === timePassSingleH)) {
+            if(idVal === 'ftc' && (passVal === correctTimePass || passVal === 'j999')) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
                 localStorage.setItem('tfc_user_role', 'admin');
                 localStorage.setItem('tfc_admin_role', 'admin');
@@ -1573,7 +1561,6 @@
                 return;
             }
 
-            // Student Credential Login Check
             let studentCreds = JSON.parse(localStorage.getItem('tfc_student_creds')) || {};
             if(studentCreds[idVal] && studentCreds[idVal] === passVal) {
                 localStorage.setItem('tfc_permanent_logged_in', 'true');
@@ -1694,7 +1681,6 @@
             document.getElementById('modal-desc').innerText = 'Enter master password (j999) to change season:';
             document.getElementById('modal-password-input').style.display = 'block';
             document.getElementById('modal-text-input').style.display = 'block';
-            document.getElementById('modal-text-input').placeholder = 'e.g. 2025-2026';
             document.getElementById('modal-cancel-btn').style.display = 'block';
             document.getElementById('modal-confirm-btn').innerText = 'Confirm';
             document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
@@ -1780,15 +1766,6 @@
                     } else {
                         showGlassAlert('📋 Student Details', `Login ID: ${pendingAction.loginId}\nPassword: ${studentCreds[pendingAction.loginId]}`);
                     }
-                } else if(pendingAction && pendingAction.type === 'remove_student') {
-                    const studentId = pendingAction.studentId;
-                    closeModal();
-                    masterStudents = masterStudents.filter(s => s.id !== studentId);
-                    manualStudents = manualStudents.filter(mId => mId !== studentId);
-                    delete studentFeeData[studentId];
-                    delete studentDetails[studentId];
-                    saveData();
-                    showGlassAlert('🗑️ Student Removed', 'Student ko attendance list se hata diya gaya hai.');
                 } else if(pendingAction === 'clear') {
                     localStorage.clear();
                     masterStudents = [];
@@ -1981,22 +1958,13 @@
             saveData();
         }
 
-        function confirmRemoveStudent(id) {
+        function removeStudent(id) {
             playClickSound('toggle');
-            const student = masterStudents.find(s => s.id === id);
-            const studentName = student ? student.name : 'this student';
-
-            pendingAction = { type: 'remove_student', studentId: id };
-            document.getElementById('modal-title').innerText = '⚠️ Confirm Removal';
-            document.getElementById('modal-desc').innerText = `Kya aap sach mein "${studentName}" ko attendance list se hatana chahte hain? Enter password (j999) to confirm:`;
-            document.getElementById('modal-password-input').style.display = 'block';
-            document.getElementById('modal-text-input').style.display = 'none';
-            document.getElementById('modal-cancel-btn').style.display = 'block';
-            document.getElementById('modal-confirm-btn').innerText = 'Remove Student';
-            document.getElementById('modal-confirm-btn').onclick = submitModalPassword;
-            document.getElementById('modal-password-input').value = "";
-            document.getElementById('custom-modal').classList.add('active');
-            setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
+            masterStudents = masterStudents.filter(s => s.id !== id);
+            manualStudents = manualStudents.filter(mId => mId !== id);
+            delete studentFeeData[id];
+            delete studentDetails[id];
+            saveData();
         }
 
         function renderCredentialsManager() {
@@ -2021,7 +1989,6 @@
                         </div>
                         <div class="actions">
                             <button onclick="approveStudentRegistration('${req.id}')" style="background:var(--accent-green); color:#000; padding:6px 12px; font-size:0.8rem;">Approve ✅</button>
-                            <button onclick="rejectStudentRegistration('${req.id}', '${req.mobile}')" style="background:var(--accent-red); color:#fff; padding:6px 12px; font-size:0.8rem;">Reject ❌</button>
                         </div>
                     `;
                     pendingContainer.appendChild(row);
@@ -2095,22 +2062,6 @@
 
             saveData();
             showGlassAlert('🎉 Approved!', `Student ${req.name} has been approved!\nLogin ID: ${loginId}\nPassword: ${loginPass}`);
-        }
-
-        function rejectStudentRegistration(reqId, mobile) {
-            playClickSound('toggle');
-            let pendingRegs = JSON.parse(localStorage.getItem('tfc_pending_regs')) || [];
-            pendingRegs = pendingRegs.filter(r => r.id !== reqId);
-            localStorage.setItem('tfc_pending_regs', JSON.stringify(pendingRegs));
-
-            let rejectedMobiles = JSON.parse(localStorage.getItem('tfc_rejected_mobiles')) || [];
-            if(!rejectedMobiles.includes(mobile)) {
-                rejectedMobiles.push(mobile);
-                localStorage.setItem('tfc_rejected_mobiles', JSON.stringify(rejectedMobiles));
-            }
-
-            renderCredentialsManager();
-            showGlassAlert('🚫 Rejected & Blocked', 'Registration request rejected and mobile number permanently blocked.');
         }
 
         function promptViewStudentCredentials(studentId, loginId) {
@@ -2515,7 +2466,7 @@
                     <div class="actions">
                         <button class="btn-status btn-present ${status === 'P' ? 'active' : ''}" onclick="setDailyStatus('${student.id}', 'P')">P</button>
                         <button class="btn-status btn-absent ${status === 'A' ? 'active' : ''}" onclick="setDailyStatus('${student.id}', 'A')">A</button>
-                        <button class="btn-delete-mini" onclick="confirmRemoveStudent('${student.id}')" title="Delete">×</button>
+                        <button class="btn-delete-mini" onclick="removeStudent('${student.id}')" title="Delete">×</button>
                     </div>
                 `;
                 container.appendChild(row);
