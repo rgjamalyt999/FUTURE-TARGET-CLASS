@@ -396,6 +396,29 @@
         input:checked + .slider { background-color: var(--accent-cyan); }
         input:checked + .slider:before { transform: translateX(22px); background-color: #000; }
 
+        /* Ultra Premium Academic Season Badge */
+        .season-badge {
+            background: linear-gradient(135deg, rgba(255, 170, 0, 0.12), rgba(0, 243, 255, 0.08));
+            border: 1.5px solid rgba(255, 170, 0, 0.6);
+            backdrop-filter: blur(15px);
+            color: #ffcc00;
+            padding: 12px 18px;
+            border-radius: 14px;
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 16px;
+            font-size: 0.92rem;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.2), inset 0 0 10px rgba(255, 170, 0, 0.1);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .season-badge:hover {
+            border-color: #ffaa00;
+            box-shadow: 0 0 25px rgba(255, 170, 0, 0.35);
+        }
+
         /* Premium App-Like Vertical Option Tabs with Neon Glow & Gradient Fill */
         .tabs {
             display: flex;
@@ -736,24 +759,6 @@
             color: var(--text-muted);
             padding: 25px 12px;
             font-size: 0.88rem;
-        }
-
-        .season-badge {
-            background: rgba(255, 170, 0, 0.15);
-            border: 1px solid #ffaa00;
-            color: #ffaa00;
-            padding: 10px 12px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 600;
-            margin-bottom: 14px;
-            font-size: 0.82rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .season-badge:hover {
-            background: rgba(255, 170, 0, 0.25);
         }
 
         .session-summary {
@@ -1203,11 +1208,12 @@
                 <button class="menu-btn" onclick="toggleSettingsDrawer()" title="Settings">☰</button>
             </div>
 
-            <div id="season-display-badge" class="season-badge" onclick="promptChangeSeason()" title="Click to change season">
-                📅 Active Academic Season: <b id="current-season-text">2025-2026</b> (Tap to Edit)
+            <!-- Ultra Premium Academic Season Badge without Tap to Edit suggestion -->
+            <div id="season-display-badge" class="season-badge" onclick="promptChangeSeason()" title="Click to update season">
+                📅 Active Academic Season: <b id="current-season-text" style="color:var(--accent-cyan); font-size:1rem; text-shadow:0 0 10px rgba(0,243,255,0.6);">2025-2026</b>
             </div>
 
-            <!-- Premium Stacked Option Tabs without 'Option 1/2' and with glow/gradient fill -->
+            <!-- Premium Stacked Option Tabs -->
             <div class="tabs">
                 <button class="tab-btn active" onclick="playClickSound(); switchTab('daily')">
                     <span>⚡ Daily Attendance Portal</span>
@@ -1305,8 +1311,8 @@
 
             <div id="system-section" class="section-view">
                 <div class="card">
-                    <h3 style="color: var(--accent-cyan); font-size: 1.05rem; margin-bottom: 8px;">🛠️ System Management & Active Devices</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Manage active user sessions and backup files.</p>
+                    <h3 style="color: var(--accent-cyan); font-size: 1.05rem; margin-bottom: 8px;">🛠️ Developer & Device Monitoring Center</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Live Firebase Device Sessions, Device Name & Battery Charging Status:</p>
                     
                     <div id="active-sessions-list" style="margin-bottom: 20px;"></div>
 
@@ -1580,7 +1586,6 @@
             if(el) el.innerText = season;
         }
 
-        // Premium Soft Smooth Synth Sound Effect Generator
         function playClickSound(type = 'success') {
             const soundEnabled = JSON.parse(localStorage.getItem('tfc_sound_enabled')) ?? true;
             if(!soundEnabled) return;
@@ -1593,15 +1598,15 @@
 
                 if(type === 'success') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5 note
-                    osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.15); // G5 note
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.15);
                     gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
                     osc.start();
                     osc.stop(audioCtx.currentTime + 0.22);
                 } else if(type === 'toggle') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(392.00, audioCtx.currentTime); // G4 note
+                    osc.frequency.setValueAtTime(392.00, audioCtx.currentTime);
                     osc.frequency.exponentialRampToValueAtTime(523.25, audioCtx.currentTime + 0.1);
                     gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
@@ -1667,7 +1672,6 @@
                 return;
             }
 
-            // Check ban status for students
             const bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
             if(bannedUsers.includes(idVal)) {
                 showGlassAlert('❌ Access Banned', 'Your account has been banned by the developer.');
@@ -1710,11 +1714,27 @@
             setTimeout(() => { document.getElementById('modal-password-input').focus(); }, 100);
         }
 
-        function registerActiveSession(userId, role) {
+        async function registerActiveSession(userId, role) {
+            let deviceName = navigator.userAgentData?.platform || navigator.platform || 'Unknown Device';
+            let browserInfo = navigator.userAgent.includes('Chrome') ? 'Chrome' : (navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser');
+            let fullDeviceStr = `${deviceName} (${browserInfo})`;
+
+            let batteryInfo = 'N/A';
+            if (navigator.getBattery) {
+                try {
+                    let batt = await navigator.getBattery();
+                    let pct = Math.round(batt.level * 100);
+                    let charging = batt.charging ? '⚡ Charging' : '🔋 Discharging';
+                    batteryInfo = `${pct}% - ${charging}`;
+                } catch(e) {}
+            }
+
             let activeSessions = JSON.parse(localStorage.getItem('tfc_active_sessions')) || {};
             activeSessions[userId] = {
                 userId: userId,
                 role: role,
+                device: fullDeviceStr,
+                battery: batteryInfo,
                 loginTime: new Date().toLocaleTimeString(),
                 date: getTodayDateStr()
             };
@@ -1851,7 +1871,7 @@
             playClickSound('toggle');
             pendingAction = 'clear';
             document.getElementById('modal-title').innerText = '🗑️ Clear All Data & Reset';
-            document.getElementById('modal-desc').innerText = 'Enter master password to erase all data:';
+            document.getElementById('modal-desc').innerText = 'Enter master password to erase all student & attendance data:';
             document.getElementById('modal-password-input').style.display = 'block';
             document.getElementById('modal-text-input').style.display = 'none';
             document.getElementById('modal-cancel-btn').style.display = 'block';
@@ -1908,16 +1928,30 @@
                         showGlassAlert('📋 Student Details', `Login ID: ${pendingAction.loginId}\nPassword: ${studentCreds[pendingAction.loginId]}`);
                     }
                 } else if(pendingAction === 'clear') {
-                    localStorage.clear();
+                    // PRESERVE DEVELOPER DATA & ACTIVE SEASON (Do not delete season or dev session)
+                    const preservedSeason = localStorage.getItem('tfc_active_season');
+                    const preservedSessions = localStorage.getItem('tfc_active_sessions');
+                    
                     masterStudents = [];
                     registerRecords = {};
                     studentFeeData = {};
                     studentCreds = {};
                     studentDetails = {};
                     manualStudents = [];
-                    localStorage.setItem('tfc_active_season', '2025-2026');
+                    
+                    localStorage.removeItem('tfc_master_students');
+                    localStorage.removeItem('tfc_register_records');
+                    localStorage.removeItem('tfc_student_fee_data');
+                    localStorage.removeItem('tfc_student_creds');
+                    localStorage.removeItem('tfc_student_details');
+                    localStorage.removeItem('tfc_manual_students');
+                    localStorage.removeItem('tfc_pending_regs');
+
+                    if(preservedSeason) localStorage.setItem('tfc_active_season', preservedSeason);
+                    if(preservedSessions) localStorage.setItem('tfc_active_sessions', preservedSessions);
+
                     closeModal();
-                    showGlassAlert('✨ Success', 'All data cleared successfully!', () => {
+                    showGlassAlert('✨ Success', 'Student data cleared successfully! Developer season & session are securely preserved.', () => {
                         renderDailyUI();
                         renderRegister();
                         renderFeeLedger();
@@ -1937,7 +1971,7 @@
         function renderActiveSessionsManager() {
             const container = document.getElementById('active-sessions-list');
             if(!container) return;
-            container.innerHTML = `<h4 style="color:var(--accent-cyan); margin-bottom:10px; font-size:0.9rem;">Active Login Sessions & Devices:</h4>`;
+            container.innerHTML = `<h4 style="color:var(--accent-cyan); margin-bottom:10px; font-size:0.9rem;">Live Connected Devices & Battery Status:</h4>`;
 
             let activeSessions = JSON.parse(localStorage.getItem('tfc_active_sessions')) || {};
             let bannedUsers = JSON.parse(localStorage.getItem('tfc_banned_users')) || [];
@@ -1955,11 +1989,13 @@
                 const item = document.createElement('div');
                 item.className = 'fee-row';
                 item.innerHTML = `
-                    <div class="fee-info">
+                    <div class="fee-info" style="width:100%;">
                         <h4>User: <code style="color:var(--accent-cyan);">${sess.userId}</code> (${sess.role})</h4>
-                        <p>Logged in at: ${sess.loginTime} on ${sess.date} | Status: <b style="color:${isBanned ? 'var(--accent-red)' : 'var(--accent-green)'};">${isBanned ? 'BANNED' : 'ACTIVE'}</b></p>
+                        <p style="margin-top:3px;">📱 <b>Device:</b> ${sess.device || 'Web Browser'}</p>
+                        <p style="margin-top:2px;">🔋 <b>Battery & Charging:</b> <span style="color:var(--accent-green);">${sess.battery || 'N/A'}</span></p>
+                        <p style="margin-top:2px; font-size:0.75rem; color:var(--text-muted);">Logged in at: ${sess.loginTime} on ${sess.date}</p>
                     </div>
-                    <div class="actions">
+                    <div class="actions" style="margin-top:8px;">
                         <button onclick="forceLogoutUser('${sess.userId}')" style="background:var(--accent-red); color:#fff; padding:6px 10px; font-size:0.75rem;">Logout</button>
                         ${!isAdminOrDev ? `<button onclick="toggleBanUser('${sess.userId}')" style="background:${isBanned ? 'var(--accent-green)' : '#ffaa00'}; color:#000; padding:6px 10px; font-size:0.75rem;">${isBanned ? 'Unban' : 'Ban'}</button>` : ''}
                     </div>
